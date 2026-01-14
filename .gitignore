@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# LangGraph
+.langgraph_api/
+
+# OS
+.DS_Store
+
+# Config
+config.yaml
