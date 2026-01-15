@@ -4,4 +4,7 @@ version = "0.1.0"
 description = "mini-OpenCode is a lightweight experimental Coding Agent inspired by OpenCode. It explores how LLMs can plan, reason, and iteratively write code with minimal infrastructure, aiming to provide a simple, hackable foundation for understanding and building agentic coding systems."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "langgraph>=1.0.6",
+    "PyYAML>=6.0.1",
+]
