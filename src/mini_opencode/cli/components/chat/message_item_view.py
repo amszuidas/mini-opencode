@@ -95,48 +95,33 @@ class MessageItemView(Static):
 
     def render_tool_call(self, tool_call: ToolCall) -> str:
         name = tool_call["name"]
-        if name == "bash":
-            return "💻 Execute command: " + tool_call["args"]["command"]
-        elif name == "tree":
-            return "🔍 Explore project structure: " + (
-                tool_call["args"]["path"]
-                if tool_call["args"].get("path")
-                else "."
-                + (
-                    " --max-depth=" + tool_call["args"]["max_depth"]
-                    if tool_call["args"].get("max_depth")
-                    else ""
+        args = tool_call["args"]
+        match name:
+            case "bash":
+                return f"💻 Execute command: {args['command']}"
+            case "todo_write":
+                return "📌 Update to-do list"
+            case "read":
+                return f"👁️  Read file: {args['path']}"
+            case "write":
+                return f"✏️  Write file: {args['path']}"
+            case "edit":
+                return f"✏️  Edit file: {args['path']}"
+            case "grep":
+                path = args.get("path") or "."
+                return f"🔍 Search files: {args['pattern']} in {path}"
+            case "ls":
+                match_str = f" with {args['match']}" if args.get("match") else ""
+                return f"🗂️ List files: {args['path']}{match_str}"
+            case "tree":
+                path = args.get("path") or "."
+                depth = (
+                    f" --max-depth={args['max_depth']}" if args.get("max_depth") else ""
                 )
-            )
-        elif name == "grep":
-            return (
-                "🔍 Search files: "
-                + tool_call["args"]["pattern"]
-                + " in "
-                + (tool_call["args"]["path"] if tool_call["args"].get("path") else ".")
-            )
-        elif name == "ls":
-            return (
-                "🗂️ List files: "
-                + tool_call["args"]["path"]
-                + (
-                    " with " + tool_call["args"]["match"]
-                    if tool_call["args"].get("match")
-                    else ""
-                )
-            )
-        elif name == "text_editor":
-            command = tool_call["args"]["command"]
-            if command == "view":
-                return "👁️  View file: " + tool_call["args"]["path"]
-            elif command == "create":
-                return "✏️  Create file: " + tool_call["args"]["path"]
-            elif command == "str_replace":
-                return "✏️  Replace text in file: " + tool_call["args"]["path"]
-            elif command == "insert":
-                return "✏️  Insert text into file: " + tool_call["args"]["path"]
-            else:
-                return "Unknown command: " + command
-        elif name == "todo_write":
-            return "📌 Update to-do list"
-        return f"🛠️  Use MCP tool: {name}({json.dumps(tool_call['args'])})"
+                return f"🔍 Explore project structure: {path}{depth}"
+            case "web_search":
+                return f"🔍 Web search: {args['query']}"
+            case "web_crawl":
+                return f"🔍 Web crawl: {args['url']}"
+            case _:
+                return f"🛠️ Use MCP tool: {name}({json.dumps(args)})"
