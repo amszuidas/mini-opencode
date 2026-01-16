@@ -124,7 +124,7 @@ def tree_tool(
         A tree-structured view of the directory as a string.
     """
     # Set search path
-    search_path = Path(path).expanduser() if path else Path(".")
+    search_path = Path(path).expanduser() if path else Path.cwd()
 
     try:
         # Validate path
