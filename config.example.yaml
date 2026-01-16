@@ -11,6 +11,19 @@ models:
     max_retries: 3
 
 tools:
+  enabled:
+    - edit
+    - read
+    - write
+    - grep
+    - ls
+    - tree
+    - bash
+    - web_crawl
+    - web_search
+  configs:
+    web_crawl:
+      api_key: $FIRECRAWL_API_KEY
   mcp_servers:
     docs-langchain:
       transport: 'streamable_http'
