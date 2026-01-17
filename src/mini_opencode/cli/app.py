@@ -22,6 +22,7 @@ class ConsoleApp(App):
     """The main application for mini-OpenCode."""
 
     TITLE = "mini-OpenCode"
+    ENABLE_COMMAND_PALETTE = False
 
     CSS = """
     Screen {
@@ -77,6 +78,8 @@ class ConsoleApp(App):
         super().__init__(*args, **kwargs)
         self._checkpointer = MemorySaver()
         self._coding_agent = create_coding_agent(checkpointer=self._checkpointer)
+        self._terminal_tool_calls: list[str] = []
+        self._file_modification_tool_calls: dict[str, str] = {}
 
     @property
     def is_generating(self) -> bool:
@@ -123,6 +126,8 @@ class ConsoleApp(App):
         new_theme = "dark" if is_dark_mode() else "light"
         if self.theme != new_theme:
             self.theme = new_theme
+            editor_tabs = self.query_one("#editor-tabs", EditorTabs)
+            editor_tabs.refresh_code_theme()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if not self.is_generating and event.input.id == "chat-input":
@@ -186,8 +191,41 @@ class ConsoleApp(App):
         if isinstance(message, ToolMessage):
             self._process_tool_message(message)
 
-    _terminal_tool_calls: list[str] = []
-    _file_modification_tool_calls: dict[str, str] = {}
+    def _format_tool_call_preview(self, tool_name: str, tool_args: dict) -> str | None:
+        if tool_name == "bash":
+            command = tool_args.get("command")
+            return f"$ {command}" if command else "$ bash"
+        if tool_name == "tree":
+            path = tool_args.get("path") or "."
+            max_depth = tool_args.get("max_depth")
+            depth_part = f" --max-depth={max_depth}" if max_depth is not None else ""
+            return f"$ tree {path}{depth_part}"
+        if tool_name == "grep":
+            pattern = tool_args.get("pattern")
+            path = tool_args.get("path")
+            glob = tool_args.get("glob")
+            output_mode = tool_args.get("output_mode")
+            parts: list[str] = ["$ grep"]
+            if pattern:
+                parts.append(str(pattern))
+            if path:
+                parts.append(str(path))
+            if glob:
+                parts.append(f"--glob={glob}")
+            if output_mode:
+                parts.append(f"--output={output_mode}")
+            return " ".join(parts)
+        if tool_name == "ls":
+            path = tool_args.get("path") or "."
+            match = tool_args.get("match")
+            ignore = tool_args.get("ignore")
+            parts = ["$ ls", str(path)]
+            if match:
+                parts.append(f"--match={match}")
+            if ignore:
+                parts.append(f"--ignore={ignore}")
+            return " ".join(parts)
+        return None
 
     def _process_tool_call_message(self, message: AIMessage) -> None:
         terminal_view = self.query_one("#terminal-view", TerminalView)
@@ -197,21 +235,11 @@ class ConsoleApp(App):
         for tool_call in message.tool_calls:
             tool_name = tool_call["name"]
             tool_args = tool_call["args"]
-            if tool_name == "bash":
+            preview = self._format_tool_call_preview(tool_name, tool_args)
+            if tool_name in {"bash", "tree", "grep", "ls"}:
                 self._terminal_tool_calls.append(tool_call["id"])
-                terminal_view.write(f"$ {tool_args['command']}")
+                terminal_view.write(preview or f"$ {tool_name}")
                 bottom_right_tabs.active = "terminal-tab"
-            if tool_name == "tree":
-                self._terminal_tool_calls.append(tool_call["id"])
-                terminal_view.write(
-                    f"$ tree {tool_args['path']}{f' --max-depth={tool_args["max_depth"]}' if tool_args.get('max_depth') else ''}"
-                )
-            elif tool_name == "grep":
-                self._terminal_tool_calls.append(tool_call["id"])
-                terminal_view.write(f"$ grep {' '.join(tool_args.values())}")
-            elif tool_name == "ls":
-                self._terminal_tool_calls.append(tool_call["id"])
-                terminal_view.write(f"$ ls {' '.join(tool_args.values())}")
             elif tool_name == "todo_write":
                 bottom_right_tabs.active = "todo-tab"
                 todo_list_view.update_items(tool_args["todos"])

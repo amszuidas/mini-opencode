@@ -15,6 +15,10 @@ class TodoListView(Static):
         self.update("(No TODO found)")
 
     def update_items(self, items: list[dict]):
+        if not items:
+            self.update("(No TODO found)")
+            return
+
         content = ""
         for item in items:
             if item["status"] == "in_progress":
@@ -23,5 +27,6 @@ class TodoListView(Static):
                 status = "\\[x]"
             else:
                 status = "\\[ ]"
-            content += f"{status} {item['title']}\n"
+            title = item.get("title") or ""
+            content += f"{status} {title}\n"
         self.update(content)

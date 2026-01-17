@@ -30,11 +30,10 @@ class MessageListView(VerticalScroll):
     }
     """
 
-    messages: list[AnyMessage] = []
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.can_focus = True
+        self.messages: list[AnyMessage] = []
 
     _is_generating = False
 

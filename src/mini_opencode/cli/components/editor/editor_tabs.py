@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from textual.app import ComposeResult
@@ -13,9 +15,11 @@ class EditorTabs(TabbedContent):
     }
     """
 
-    tab_map: dict[str, TabPane] = {}
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.tab_map: dict[str, EditorTab] = {}
 
-    def open_file(self, path: str, file_text: str = None):
+    def open_file(self, path: str, file_text: str | None = None):
         tab = self._find_tab_by_path(path)
         if tab is None:
             tab = EditorTab(path)
@@ -27,19 +31,32 @@ class EditorTabs(TabbedContent):
 
     def open_welcome(self):
         tab = TabPane(title="Welcome", id="welcome-tab")
-        markdown = Markdown(Path("docs/welcome.md").read_text(), id="welcome-view")
+        welcome_text = None
+        for parent in Path(__file__).resolve().parents:
+            candidate = parent / "docs" / "welcome.md"
+            if candidate.exists():
+                welcome_text = candidate.read_text(encoding="utf-8")
+                break
+        if welcome_text is None:
+            welcome_text = "Welcome to mini-OpenCode."
+        markdown = Markdown(welcome_text, id="welcome-view")
         self.add_pane(tab)
         tab.mount(markdown)
         self.active = tab.id
 
-    def _find_tab_by_path(self, path: str) -> TabPane | None:
+    def _find_tab_by_path(self, path: str) -> EditorTab | None:
         return self.tab_map.get(path)
+
+    def refresh_code_theme(self) -> None:
+        for code_view in self.query(CodeView):
+            code_view.update_code(code_view.code, code_view.file_path)
 
 
 class EditorTab(TabPane):
     def __init__(self, path: str, **kwargs):
         title = extract_filename(path)
-        super().__init__(title=title, **kwargs)
+        tab_id = kwargs.pop("id", None) or make_tab_id(path)
+        super().__init__(title=title, id=tab_id, **kwargs)
         self.path = path
 
     def compose(self) -> ComposeResult:
@@ -50,11 +67,21 @@ class EditorTab(TabPane):
         if file_text is not None:
             code_view.update_code(file_text, self.path)
         else:
-            with open(self.path, "r") as file:
-                code = file.read()
+            try:
+                with open(self.path, "r") as file:
+                    code = file.read()
                 code_view.update_code(code, self.path)
+            except OSError as e:
+                code_view.update_code(f"Error opening {self.path}:\n{e}", self.path)
 
 
 def extract_filename(path: str) -> str:
     _path = Path(path)
     return _path.name
+
+
+def make_tab_id(path: str) -> str:
+    import hashlib
+
+    digest = hashlib.md5(path.encode("utf-8")).hexdigest()
+    return f"file-{digest[:12]}"
