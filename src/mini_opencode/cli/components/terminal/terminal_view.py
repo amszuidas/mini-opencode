@@ -20,11 +20,9 @@ class TerminalView(VerticalScroll):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.terminal_output = []
 
     def write(self, text: str, muted: bool = False) -> None:
         """Add output to terminal"""
-        self.terminal_output.append(text)
         item = Static(text, classes=f"{'muted' if muted else ''}")
         self.mount(item)
         self.scroll_end(animate=True)

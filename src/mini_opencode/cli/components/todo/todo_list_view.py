@@ -23,5 +23,5 @@ class TodoListView(Static):
                 status = "\\[x]"
             else:
                 status = "\\[ ]"
-            content += f"{status} {item['content']}\n"
+            content += f"{status} {item['title']}\n"
         self.update(content)

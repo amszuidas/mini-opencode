@@ -1,12 +1,12 @@
 from rich.syntax import Syntax
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import ScrollableContainer
 from textual.widgets import Static
 
 from mini_opencode.cli.theme import DARK_THEME, LIGHT_THEME
 
 
-class CodeView(VerticalScroll):
+class CodeView(ScrollableContainer):
     """Code view component with syntax highlighting"""
 
     DEFAULT_CSS = """
@@ -16,6 +16,8 @@ class CodeView(VerticalScroll):
 
     CodeView #code-content {
         padding: 1 1;
+        width: auto;
+        height: auto;
     }
     """
 
