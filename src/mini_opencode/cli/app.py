@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from langchain.messages import AIMessage, AnyMessage, HumanMessage, ToolMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from textual import work
 from textual.app import App, ComposeResult
@@ -68,12 +69,14 @@ class ConsoleApp(App):
     ]
 
     _coding_agent: CompiledStateGraph
+    _checkpointer: MemorySaver
 
     _is_generating = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._coding_agent = create_coding_agent()
+        self._checkpointer = MemorySaver()
+        self._coding_agent = create_coding_agent(checkpointer=self._checkpointer)
 
     @property
     def is_generating(self) -> bool:
@@ -150,7 +153,9 @@ class ConsoleApp(App):
             print(f"Error loading MCP tools: {e}")
             self.exit(1)
             return
-        self._coding_agent = create_coding_agent(plugin_tools=mcp_tools)
+        self._coding_agent = create_coding_agent(
+            plugin_tools=mcp_tools, checkpointer=self._checkpointer
+        )
 
     @work(exclusive=True, thread=False)
     async def _handle_user_input(self, user_message: HumanMessage) -> None:

@@ -3,6 +3,7 @@ import os
 from langchain.agents import create_agent
 from langchain.tools import BaseTool
 from langgraph.checkpoint.base import RunnableConfig
+from langgraph.checkpoint.memory import MemorySaver
 
 from mini_opencode import project
 from mini_opencode.models import init_chat_model
@@ -23,11 +24,14 @@ from mini_opencode.tools import (
 from .state import CodingAgentState
 
 
-def create_coding_agent(plugin_tools: list[BaseTool] = [], **kwargs):
+def create_coding_agent(
+    plugin_tools: list[BaseTool] = [], checkpointer: MemorySaver | None = None, **kwargs
+):
     """Create a coding agent.
 
     Args:
         plugin_tools: Additional tools to add to the agent.
+        checkpointer: Checkpointer to use for the agent.
         **kwargs: Additional keyword arguments to pass to the agent.
 
     Returns:
@@ -52,6 +56,7 @@ def create_coding_agent(plugin_tools: list[BaseTool] = [], **kwargs):
             "coding_agent", PROJECT_ROOT=project.root_dir
         ),
         state_schema=CodingAgentState,
+        checkpointer=checkpointer,
         name="coding_agent",
         **kwargs,
     )

@@ -15,6 +15,12 @@ wheels/
 # OS
 .DS_Store
 
+# IDEs
+.idea/
+.vscode/
+.trae/
+
+
 # Config
 config.yaml
 

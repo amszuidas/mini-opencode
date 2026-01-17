@@ -42,6 +42,7 @@ DEFAULT_IGNORE_PATTERNS = [
     # IDE/Editor
     ".vscode/**",
     ".idea/**",
+    ".trae/**",
     "*.swp",
     "*.swo",
     "*~",
