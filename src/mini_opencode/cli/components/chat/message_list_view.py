@@ -48,6 +48,10 @@ class MessageListView(VerticalScroll):
             self.add_class("generating")
         else:
             self.remove_class("generating")
+        self.set_timer(0.1, self._scroll_to_bottom)
+
+    def _scroll_to_bottom(self) -> None:
+        self.scroll_end(animate=True)
 
     def compose(self) -> ComposeResult:
         yield Vertical(id="message-list")
@@ -67,4 +71,4 @@ class MessageListView(VerticalScroll):
         message_item_view = MessageItemView(message, display_header=display_header)
         message_list = self.query_one("#message-list", Vertical)
         message_list.mount(message_item_view)
-        self.scroll_end(animate=True)
+        self.set_timer(0.1, self._scroll_to_bottom)
