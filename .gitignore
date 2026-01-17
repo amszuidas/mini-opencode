@@ -11,6 +11,9 @@ wheels/
 
 # LangGraph
 .langgraph_api/
+langgraph.json
+
+
 
 # OS
 .DS_Store

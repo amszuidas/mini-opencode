@@ -1,0 +1,10 @@
+{
+  "dependencies": ["."],
+  "env": {
+    "PROJECT_ROOT": "/path/to/project"
+  },
+  "graphs": {
+    "coding_agent": "mini_opencode.agents.coding_agent:create_coding_agent_for_debug"
+  },
+  "python_version": "3.12"
+}

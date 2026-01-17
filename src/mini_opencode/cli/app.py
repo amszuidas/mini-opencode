@@ -275,6 +275,3 @@ class ConsoleApp(App):
 
 
 app = ConsoleApp()
-
-if __name__ == "__main__":
-    app.run()
