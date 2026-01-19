@@ -29,10 +29,6 @@ class CodeView(ScrollableContainer):
     def compose(self) -> ComposeResult:
         yield Static(id="code-content")
 
-    def watch_app_theme(self) -> None:
-        """Update code view when theme changes"""
-        self.update_code(self.code, self.file_path)
-
     def update_code(self, code: str, file_path: str = None) -> None:
         """Update code content and optionally the file path"""
         self.code = code

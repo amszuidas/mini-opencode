@@ -77,7 +77,6 @@ class ConsoleApp(App):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._checkpointer = MemorySaver()
-        self._coding_agent = create_coding_agent(checkpointer=self._checkpointer)
         self._terminal_tool_calls: list[str] = []
         self._file_modification_tool_calls: dict[str, str] = {}
 
@@ -166,18 +165,25 @@ class ConsoleApp(App):
     async def _handle_user_input(self, user_message: HumanMessage) -> None:
         self._process_outgoing_message(user_message)
         self.is_generating = True
-        async for chunk in self._coding_agent.astream(
-            {"messages": [user_message]},
-            stream_mode="updates",
-            config={"recursion_limit": 100, "thread_id": "thread_1"},
-        ):
-            roles = chunk.keys()
-            for role in roles:
-                messages: list[AnyMessage] = chunk[role].get("messages", [])
-                for message in messages:
-                    self._process_incoming_message(message)
-        self.is_generating = False
-        self.focus_input()
+        try:
+            async for chunk in self._coding_agent.astream(
+                {"messages": [user_message]},
+                stream_mode="updates",
+                config={"recursion_limit": 100, "thread_id": "thread_1"},
+            ):
+                roles = chunk.keys()
+                for role in roles:
+                    messages: list[AnyMessage] = chunk[role].get("messages", [])
+                    for message in messages:
+                        self._process_incoming_message(message)
+        except Exception as e:
+            error_message = AIMessage(
+                content=f"❌ **An error occurred:** {str(e)}\n\nPlease try again."
+            )
+            self._process_incoming_message(error_message)
+        finally:
+            self.is_generating = False
+            self.focus_input()
 
     def _process_outgoing_message(self, message: HumanMessage) -> None:
         chat_view = self.query_one("#chat-view", ChatView)
