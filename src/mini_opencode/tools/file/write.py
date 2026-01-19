@@ -2,7 +2,7 @@ from pathlib import Path
 
 from langchain.tools import ToolRuntime, tool
 
-from mini_opencode.tools import generate_reminders
+from mini_opencode.tools.reminders import generate_reminders
 
 from .text_editor import TextEditor
 
