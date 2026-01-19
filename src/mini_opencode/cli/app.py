@@ -4,17 +4,17 @@ import re
 from langchain.messages import AIMessage, AnyMessage, HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.state import CompiledStateGraph
-from textual import work
+from textual import on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
-from textual.widgets import Footer, Header, Input, TabbedContent, TabPane
+from textual.widgets import Footer, Header, TabbedContent, TabPane
 
 from mini_opencode import project
 from mini_opencode.agents import create_coding_agent
 from mini_opencode.tools import load_mcp_tools
 
-from .components import ChatView, EditorTabs, TerminalView, TodoListView
+from .components import ChatInput, ChatView, EditorTabs, TerminalView, TodoListView
 from .theme import DARK_THEME, LIGHT_THEME, is_dark_mode
 
 
@@ -128,14 +128,14 @@ class ConsoleApp(App):
             editor_tabs = self.query_one("#editor-tabs", EditorTabs)
             editor_tabs.refresh_code_theme()
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        if not self.is_generating and event.input.id == "chat-input":
+    @on(ChatInput.Submitted)
+    def on_chat_input_submitted(self, event: ChatInput.Submitted) -> None:
+        if not self.is_generating:
             user_input = event.value.strip()
             if user_input:
                 if user_input == "exit" or user_input == "quit":
                     self.exit()
                     return
-                event.input.value = ""
                 user_message = HumanMessage(content=user_input)
                 self._handle_user_input(user_message)
 
