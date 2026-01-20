@@ -120,25 +120,6 @@ class ConsoleApp(App):
         asyncio.create_task(self._init_agent())
         self.set_interval(2.0, self._check_system_theme)
 
-    def _check_system_theme(self) -> None:
-        """Check and update the theme based on system settings."""
-        new_theme = "dark" if is_dark_mode() else "light"
-        if self.theme != new_theme:
-            self.theme = new_theme
-            editor_tabs = self.query_one("#editor-tabs", EditorTabs)
-            editor_tabs.refresh_code_theme()
-
-    @on(ChatInput.Submitted)
-    def on_chat_input_submitted(self, event: ChatInput.Submitted) -> None:
-        if not self.is_generating:
-            user_input = event.value.strip()
-            if user_input:
-                if user_input == "exit" or user_input == "quit":
-                    self.exit()
-                    return
-                user_message = HumanMessage(content=user_input)
-                self._handle_user_input(user_message)
-
     async def _init_agent(self) -> None:
         terminal_view = self.query_one("#terminal-view", TerminalView)
         terminal_view.write("$ Loading MCP tools...")
@@ -160,6 +141,25 @@ class ConsoleApp(App):
         self._coding_agent = create_coding_agent(
             plugin_tools=mcp_tools, checkpointer=self._checkpointer
         )
+
+    def _check_system_theme(self) -> None:
+        """Check and update the theme based on system settings."""
+        new_theme = "dark" if is_dark_mode() else "light"
+        if self.theme != new_theme:
+            self.theme = new_theme
+            editor_tabs = self.query_one("#editor-tabs", EditorTabs)
+            editor_tabs.refresh_code_theme()
+
+    @on(ChatInput.Submitted)
+    def on_chat_input_submitted(self, event: ChatInput.Submitted) -> None:
+        if not self.is_generating:
+            user_input = event.value.strip()
+            if user_input:
+                if user_input == "exit" or user_input == "quit":
+                    self.exit()
+                    return
+                user_message = HumanMessage(content=user_input)
+                self._handle_user_input(user_message)
 
     @work(exclusive=True, thread=False)
     async def _handle_user_input(self, user_message: HumanMessage) -> None:
