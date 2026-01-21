@@ -129,6 +129,7 @@ class ConsoleApp(App):
     async def _init_agent(self) -> None:
         terminal_view = self.query_one("#terminal-view", TerminalView)
         terminal_view.write("$ Loading MCP tools...")
+        mcp_tools: list = []
         try:
             mcp_tools = await load_mcp_tools()
             tool_count = len(mcp_tools)
@@ -139,11 +140,9 @@ class ConsoleApp(App):
                 )
             else:
                 terminal_view.write("No tools found.\n", True)
-        except Exception as e:
-            # Fatal error
-            print(f"Error loading MCP tools: {e}")
-            self.exit(1)
-            return
+        except Exception:
+            terminal_view.write("Error loading tools.\n", True)
+
         self._coding_agent = create_coding_agent(
             plugin_tools=mcp_tools, checkpointer=self._checkpointer
         )
