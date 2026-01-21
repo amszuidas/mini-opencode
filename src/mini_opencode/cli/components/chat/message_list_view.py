@@ -72,3 +72,17 @@ class MessageListView(VerticalScroll):
         message_list = self.query_one("#message-list", Vertical)
         message_list.mount(message_item_view)
         self.set_timer(0.1, self._scroll_to_bottom)
+
+    def update_last_message(self, message: AnyMessage, update_tools: bool = True) -> None:
+        """Update the last message in the list"""
+        if not self.messages:
+            self.add_message(message)
+            return
+
+        self.messages[-1] = message
+        message_list = self.query_one("#message-list", Vertical)
+        if message_list.children:
+            last_view = message_list.children[-1]
+            if isinstance(last_view, MessageItemView):
+                last_view.update_message(message, update_tools=update_tools)
+        self.set_timer(0.1, self._scroll_to_bottom)

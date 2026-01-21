@@ -48,6 +48,12 @@ class ChatView(Vertical):
         if not isinstance(message, ToolMessage):
             message_list.add_message(message)
 
+    def update_message(self, message: AnyMessage, update_tools: bool = True) -> None:
+        """Update the last message in the chat"""
+        message_list = self.query_one("#message-list", MessageListView)
+        if not isinstance(message, ToolMessage):
+            message_list.update_last_message(message, update_tools=update_tools)
+
     def focus_input(self) -> None:
         """Focus the input field"""
         chat_input = self.query_one("#chat-input", ChatInput)

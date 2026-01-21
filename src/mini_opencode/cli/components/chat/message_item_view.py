@@ -64,34 +64,82 @@ class MessageItemView(Static):
                 header = "[bold green]⌨️ mini-OpenCode[/bold green]"
             if header:
                 yield Static(header, classes="message-header")
+
         text_content = self.message.content.strip() if self.message.content else ""
         final_action = (
             isinstance(self.message, AIMessage)
             and text_content != ""
             and (not self.message.tool_calls or len(self.message.tool_calls) == 0)
         )
-        if (
-            not isinstance(self.message, ToolMessage)
-            and text_content is not None
-            and text_content != ""
-        ):
+
+        # For AIMessage, always yield a Markdown widget if it's not a ToolMessage
+        # to support streaming content updates.
+        if not isinstance(self.message, ToolMessage):
             yield Markdown(
                 text_content,
                 id="markdown",
                 classes=f"message-content{' final' if final_action else ''}",
             )
+
         if isinstance(self.message, AIMessage):
             if self.message.tool_calls:
                 if text_content == "" and not self.display_header:
                     self.add_class("tool_calls_only")
-                for tool_call in self.message.tool_calls:
-                    margin_top = 0
-                    if text_content and tool_call == self.message.tool_calls[0]:
-                        margin_top = 1
-                    yield Static(
+                yield from self._compose_tool_calls()
+
+    def _compose_tool_calls(self) -> ComposeResult:
+        """Compose tool calls for AIMessage"""
+        if not isinstance(self.message, AIMessage) or not self.message.tool_calls:
+            return
+
+        text_content = self.message.content.strip() if self.message.content else ""
+        for tool_call in self.message.tool_calls:
+            margin_top = 0
+            if text_content and tool_call == self.message.tool_calls[0]:
+                margin_top = 1
+            yield Static(
+                self.render_tool_call(tool_call),
+                classes=f"tool_call margin_top_{margin_top}",
+            )
+
+    def update_message(self, message: AnyMessage, update_tools: bool = True) -> None:
+        """Update the message and its visual representation"""
+        self.message = message
+        text_content = self.message.content.strip() if self.message.content else ""
+
+        try:
+            markdown = self.query_one("#markdown", Markdown)
+            markdown.update(text_content)
+        except Exception:
+            # If markdown wasn't created yet (e.g. for ToolMessage), skip
+            pass
+
+        # For tool calls, we refresh the tool calls section only if requested
+        if (
+            update_tools
+            and isinstance(self.message, AIMessage)
+            and self.message.tool_calls
+        ):
+            # Remove existing tool calls
+            for child in self.query(".tool_call"):
+                child.remove()
+
+            # Mount new tool calls
+            for tool_call in self.message.tool_calls:
+                margin_top = 0
+                if text_content and tool_call == self.message.tool_calls[0]:
+                    margin_top = 1
+                self.mount(
+                    Static(
                         self.render_tool_call(tool_call),
                         classes=f"tool_call margin_top_{margin_top}",
                     )
+                )
+
+            if text_content == "" and not self.display_header:
+                self.add_class("tool_calls_only")
+            else:
+                self.remove_class("tool_calls_only")
 
     def render_tool_call(self, tool_call: ToolCall) -> str:
         name = tool_call["name"]

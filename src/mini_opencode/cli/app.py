@@ -1,7 +1,13 @@
 import asyncio
 import re
 
-from langchain.messages import AIMessage, AnyMessage, HumanMessage, ToolMessage
+from langchain.messages import (
+    AIMessage,
+    AIMessageChunk,
+    AnyMessage,
+    HumanMessage,
+    ToolMessage,
+)
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from textual import on, work
@@ -166,16 +172,44 @@ class ConsoleApp(App):
         self._process_outgoing_message(user_message)
         self.is_generating = True
         try:
-            async for chunk in self._coding_agent.astream(
+            current_ai_message: AIMessageChunk | None = None
+            async for event_type, chunk in self._coding_agent.astream(
                 {"messages": [user_message]},
-                stream_mode="updates",
+                stream_mode=["messages", "updates"],
                 config={"recursion_limit": 100, "thread_id": "thread_1"},
             ):
-                roles = chunk.keys()
-                for role in roles:
-                    messages: list[AnyMessage] = chunk[role].get("messages", [])
-                    for message in messages:
-                        self._process_incoming_message(message)
+                if event_type == "messages":
+                    message_chunk, _ = chunk
+                    if isinstance(message_chunk, AIMessageChunk):
+                        if current_ai_message is None:
+                            current_ai_message = message_chunk
+                            self._process_incoming_message(current_ai_message)
+                        else:
+                            current_ai_message += message_chunk
+                            # During streaming, don't update tool call widgets to avoid partial parsing errors
+                            self._update_incoming_message(
+                                current_ai_message, update_tools=False
+                            )
+
+                elif event_type == "updates":
+                    # Node finished. Reset current_ai_message for next potential AI response
+                    current_ai_message = None
+
+                    roles = chunk.keys()
+                    for role in roles:
+                        messages: list[AnyMessage] = chunk[role].get("messages", [])
+                        for message in messages:
+                            if isinstance(message, AIMessage):
+                                # Update with final message (includes complete tool calls)
+                                self._update_incoming_message(
+                                    message, update_tools=True
+                                )
+                                if message.tool_calls:
+                                    self._process_tool_call_message(message)
+                            elif isinstance(message, ToolMessage):
+                                # Tool results are not streamed, add them normally
+                                self._process_incoming_message(message)
+                                self._process_tool_message(message)
         except Exception as e:
             error_message = AIMessage(
                 content=f"❌ **An error occurred:** {str(e)}\n\nPlease try again."
@@ -192,10 +226,12 @@ class ConsoleApp(App):
     def _process_incoming_message(self, message: AnyMessage) -> None:
         chat_view = self.query_one("#chat-view", ChatView)
         chat_view.add_message(message)
-        if isinstance(message, AIMessage) and message.tool_calls:
-            self._process_tool_call_message(message)
-        if isinstance(message, ToolMessage):
-            self._process_tool_message(message)
+
+    def _update_incoming_message(
+        self, message: AnyMessage, update_tools: bool = True
+    ) -> None:
+        chat_view = self.query_one("#chat-view", ChatView)
+        chat_view.update_message(message, update_tools=update_tools)
 
     def _format_tool_call_preview(self, tool_name: str, tool_args: dict) -> str | None:
         if tool_name == "bash":
