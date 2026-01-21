@@ -54,6 +54,9 @@ def create_coding_agent(
     enabled_tools_config = get_config_section(["tools", "enabled"])
     if enabled_tools_config is not None and isinstance(enabled_tools_config, list):
         tools = [TOOL_MAP[name] for name in enabled_tools_config if name in TOOL_MAP]
+        # Add todo_write_tool if not enabled
+        if "todo_write" not in enabled_tools_config:
+            tools.append(todo_write_tool)
     else:
         tools = [
             bash_tool,
