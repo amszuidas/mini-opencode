@@ -64,7 +64,7 @@ from mini_opencode.prompts import apply_prompt_template
 
 ### Type Hints
 - Always use type hints for function parameters and return values
-- Use `Optional[T]` for nullable types (not `Union[T, None]`)
+- Use `T | None` for nullable types instead of `Optional[T]`
 - Use `list[T]` and `dict[K, V]` instead of `List[T]` and `Dict[K, V]`
 
 Example from `src/mini_opencode/tools/fs/text_editor.py`:

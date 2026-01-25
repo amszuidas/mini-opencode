@@ -96,7 +96,7 @@
 Run the agent directly on a project directory:
 ```bash
 uv run -m mini_opencode /absolute/path/to/target/project
-Or using python
+# Or using python
 python -m mini_opencode /absolute/path/to/target/project
 ```
 
