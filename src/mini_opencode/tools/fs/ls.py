@@ -49,7 +49,7 @@ def ls_tool(
         """Check if a file name matches any of the given ignore patterns."""
         for pattern in patterns:
             # Handle directory-style ignore patterns (e.g., "node_modules/**")
-            clean_pattern = pattern.rstrip("/**").rstrip("/*")
+            clean_pattern = pattern.removesuffix("/**").removesuffix("/*")
             if fnmatch.fnmatch(name, clean_pattern):
                 return True
         return False
