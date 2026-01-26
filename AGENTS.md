@@ -149,6 +149,7 @@ def validate_path(self, path: Path):
   - `models/` - LLM model configurations
   - `prompts/` - Prompt templates
   - `config/` - Configuration management
+  - `skills/` - Agent Skills system (loader, parser, and types)
 
 ### Configuration Management
 - Use `config.yaml` for application configuration
@@ -169,6 +170,7 @@ The project includes these key guidelines:
 - Maintains conversation history and todo list in state
 - Configurable through `config.yaml`
 - Supports MCP (Model Context Protocol) server integration
+- Supports all kinds of Agent Skills
 
 ## Environment Variables
 - `DEEPSEEK_API_KEY` - DeepSeek API key

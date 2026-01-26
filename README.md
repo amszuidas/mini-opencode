@@ -22,6 +22,7 @@
 - **🤖 Intelligent Coding Agent**: Leverages LangGraph for stateful, multi-step reasoning and execution.
 - **🛠️ Comprehensive Toolset**: Includes tools for file operations (`read`, `write`, `edit`), filesystem navigation (`ls`, `tree`, `grep`), terminal commands (`bash`), web search (`tavily`), and web crawling (`firecrawl`).
 - **📝 Context-Aware Task Management**: Built-in TODO system to track progress on complex, multi-step tasks.
+- **🚀 Agent Skills System**: Dynamically loads specialized instructions, scripts, and resources (Skills) to improve performance on specific tasks (e.g., frontend design).
 - **⚙️ Highly Configurable**: flexible YAML-based configuration for models, tools, and API keys.
 - **🔌 Extensible Architecture**: Supports [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) for integrating external tools and servers.
 - **🎨 Interactive UI**: Features a clean terminal-based interface using [Textual](https://github.com/Textualize/textual), with support for automatic dark/light mode switching and streaming model responses.
@@ -117,6 +118,7 @@ mini-opencode/
 │   ├── config/           # Configuration loading & validation
 │   ├── models/           # LLM model factory & setup
 │   ├── prompts/          # Prompt templates (Jinja2)
+│   ├── skills/           # Skills system implementation (loader, parser, types)
 │   ├── tools/            # Tool implementations
 │   │   ├── file/         # File I/O (read, write, edit)
 │   │   ├── fs/           # File system (ls, tree, grep)
@@ -126,6 +128,7 @@ mini-opencode/
 │   │   └── todo/         # Task management
 │   ├── main.py           # CLI entry point
 │   └── project.py        # Project context manager
+├── skills/               # Agent Skills (instructions, scripts, and references)
 ├── AGENTS.md             # Developer guide for agents
 ├── Makefile              # Build & run commands
 ├── config.example.yaml   # Template configuration
