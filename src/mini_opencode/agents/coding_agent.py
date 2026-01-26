@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from langchain.agents import create_agent
 from langchain.tools import BaseTool
@@ -9,6 +10,7 @@ from mini_opencode import project
 from mini_opencode.config import get_config_section
 from mini_opencode.models import init_chat_model
 from mini_opencode.prompts import apply_prompt_template
+from mini_opencode.skills.loader import load_skills
 from mini_opencode.tools import (
     bash_tool,
     edit_tool,
@@ -81,7 +83,19 @@ def create_coding_agent(
         ]
 
     # Initialize system prompt
-    system_prompt = apply_prompt_template("coding_agent", PROJECT_ROOT=project.root_dir)
+    package_root = Path(__file__).parent.parent.parent.parent
+    skills_dir = package_root / "skills"
+    skills = load_skills(skills_dir)
+    skills_list_str = "\n".join(
+        [f"- {skill.name}: {skill.path}\n  {skill.description}" for skill in skills]
+    )
+
+    system_prompt = apply_prompt_template(
+        "coding_agent",
+        PROJECT_ROOT=project.root_dir,
+        SKILLS_PATH=str(skills_dir.absolute()),
+        SKILLS_LIST=skills_list_str,
+    )
 
     return create_agent(
         model=model,
