@@ -169,6 +169,7 @@ The project includes these key guidelines:
 - Supports comprehensive tool use (file operations, terminal, web search, etc.)
 - Maintains conversation history and todo list in state
 - Configurable through `config.yaml`
+- Supports Slash Commands (e.g., `/clear`, `/resume`, `/exit`) with auto-completion and suggestion navigation
 - Supports MCP (Model Context Protocol) server integration
 - Supports all kinds of Agent Skills
 

@@ -42,7 +42,7 @@ class ChatInput(TextArea):
         # Set default placeholder if not provided
         if "placeholder" not in kwargs:
             kwargs["placeholder"] = (
-                "Input your message here, press Enter to send, Ctrl+J to newline"
+                "Input message or / for commands, Enter to send, Ctrl+J for newline"
             )
         super().__init__(*args, **kwargs)
         self.show_line_numbers = False
