@@ -76,11 +76,21 @@ class EditorTab(TabPane):
             code_view.update_code(file_text, self.path)
         else:
             try:
-                with open(self.path, "r") as file:
+                with open(self.path, "r", encoding="utf-8") as file:
                     code = file.read()
                 code_view.update_code(code, self.path)
             except OSError as e:
                 code_view.update_code(f"Error opening {self.path}:\n{e}", self.path)
+            except UnicodeDecodeError:
+                # Fallback for files that might not be UTF-8, though we prefer UTF-8
+                try:
+                    with open(self.path, "r", encoding="gbk") as file:
+                        code = file.read()
+                    code_view.update_code(code, self.path)
+                except Exception as e:
+                    code_view.update_code(
+                        f"Error decoding {self.path}:\n{e}", self.path
+                    )
 
 
 def extract_filename(path: str) -> str:
