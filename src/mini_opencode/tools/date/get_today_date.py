@@ -11,9 +11,6 @@ def get_today_date_tool(
 ) -> str:
     """
     Get the current date in YYYY-MM-DD format.
-
-    Args:
-        runtime: The ToolRuntime object containing the current agent state.
     """
     today = datetime.now().strftime("%Y-%m-%d")
     reminders = generate_reminders(runtime)

@@ -16,9 +16,6 @@ def todo_write_tool(
     Args:
         todos: A list of TodoItem objects representing the current state of tasks.
         tool_call_id: The unique identifier for the tool call (injected).
-
-    Returns:
-        A Command object to update the state with the new TODO list and a feedback message.
     """
     unfinished_todos = [
         todo
