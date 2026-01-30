@@ -1,190 +1,49 @@
-# AGENTS.md - mini-OpenCode Development Guide
+# Architecture Overview: mini-OpenCode
 
-This document provides essential information for AI agents working in the mini-opencode codebase.
+This document provides a high-level overview of the mini-OpenCode architecture, development practices, and project structure to assist developers and AI agents in understanding and contributing to the codebase.
 
-## Build, Lint, and Test Commands
+## 1. Project Overview
+mini-OpenCode is a lightweight, experimental AI Coding Agent inspired by Deer-Code and OpenCode. It leverages **LangGraph** to implement a stateful, iterative reasoning loop for code development.
 
-### Installation and Setup
-```bash
-# Install dependencies using uv (Python package manager)
-uv sync
+### Core Architecture
+- **State Management**: Uses `CodingAgentState` (extending LangGraph's `MessagesState`) to track conversation history and a persistent list of `todos`.
+- **Agent Logic**: The core agent is defined in `src/mini_opencode/agents/coding_agent.py`, using `create_agent` from LangGraph.
+- **UI Layer**: A terminal-based interface built with **Textual** (`src/mini_opencode/cli/`), providing streaming responses and interactive components.
+- **Tooling System**: A modular toolset in `src/mini_opencode/tools/` covering file I/O, filesystem navigation, shell execution, and web research.
+- **Skills System**: A dynamic system (`src/mini_opencode/skills/`) that loads specialized instructions and resources from the `skills/` directory to enhance agent capabilities.
 
-# Build the package
-uv build
+## 2. Build & Commands
+The project uses **uv** as its primary package manager.
 
-# Run development server
-make dev  # or: uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.12 langgraph dev --no-browser --allow-blocking
-```
+### Development Commands
+- **Install Dependencies**: `uv sync` or `make install`
+- **Build Package**: `uv build`
+- **Run CLI**: `python -m mini_opencode <target_directory>`
+- **Run Dev Server**: `make dev` (starts LangGraph development server for visualization and debugging)
 
-### Running the Application
-```bash
-# Run the mini-OpenCode CLI application
-python -m mini_opencode /path/to/project
-```
+## 3. Code Style
+mini-OpenCode follows strict Python coding standards to ensure reliability and maintainability.
 
-### Testing
-Currently no test framework is configured. The project uses:
-- Python 3.12+ (as specified in pyproject.toml)
-- No test files found in the repository
-- No test commands defined in Makefile
+### Conventions
+- **Version**: Python 3.12+ required.
+- **Type Hints**: Mandatory for all function parameters and return values. Use modern syntax like `T | None` and `list[T]`.
+- **Naming**:
+  - Files/Functions/Variables: `snake_case`
+  - Classes: `PascalCase`
+  - Constants: `UPPER_SNAKE_CASE`
+- **Formatting**: Google-style docstrings are required for all public modules, classes, and functions.
+- **Imports**: Organized as: (1) Standard library, (2) Third-party, (3) Local `mini_opencode` modules.
 
-## Code Style Guidelines
+## 4. Testing
+- **Framework**: Currently, no formal test framework (like pytest) is configured in the repository.
+- **Validation**: Developers are encouraged to perform manual validation via the CLI and use LangGraph Studio (`make dev`) for tracing and debugging agent logic.
 
-### Python Version
-- **Python 3.12+** required (specified in pyproject.toml)
-- Use type hints throughout the codebase
+## 5. Security
+- **Credential Management**: API keys and sensitive tokens must be stored in a `.env` file or environment variables, never hardcoded.
+- **Path Safety**: Tools (like `read`, `write`, `edit`) strictly validate that paths are absolute to prevent accidental operations outside the intended project context.
+- **Tool Execution**: The `bash` tool executes shell commands; agents should exercise caution and avoid destructive operations unless explicitly requested.
 
-### Imports Organization
-Follow this import order pattern:
-1. Standard library imports
-2. Third-party imports (langchain, textual, etc.)
-3. Local application imports (mini_opencode modules)
-
-Example from `src/mini_opencode/agents/coding_agent.py`:
-```python
-import os
-
-from langchain.agents import create_agent
-from langchain.tools import BaseTool
-from langgraph.checkpoint.base import RunnableConfig
-from langgraph.checkpoint.memory import MemorySaver
-
-from mini_opencode import project
-from mini_opencode.config import get_config_section
-from mini_opencode.models import init_chat_model
-from mini_opencode.prompts import apply_prompt_template
-```
-
-### Formatting and Naming Conventions
-- **File naming**: Use snake_case for Python files (e.g., `coding_agent.py`)
-- **Class naming**: Use PascalCase (e.g., `ConsoleApp`, `TextEditor`)
-- **Function naming**: Use snake_case (e.g., `create_coding_agent`, `validate_path`)
-- **Variable naming**: Use snake_case (e.g., `plugin_tools`, `checkpointer`)
-- **Constants**: Use UPPER_SNAKE_CASE (e.g., `TOOL_MAP`, `DARK_THEME`)
-
-### Type Hints
-- Always use type hints for function parameters and return values
-- Use `T | None` for nullable types instead of `Optional[T]`
-- Use `list[T]` and `dict[K, V]` instead of `List[T]` and `Dict[K, V]`
-
-Example from `src/mini_opencode/tools/fs/text_editor.py`:
-```python
-from typing import Literal
-
-TextEditorCommand = Literal[
-    "read",
-    "write",
-    "edit",
-]
-
-class TextEditor:
-    def validate_path(self, path: Path) -> None:
-        """Check that the path is absolute."""
-```
-
-### Error Handling
-- Use try-except blocks with specific exception types
-- Provide helpful error messages with suggestions
-- Use `raise ValueError` for invalid arguments
-- Use `raise FileNotFoundError` for missing files
-
-Example from `src/mini_opencode/main.py`:
-```python
-try:
-    project.root_dir = new_root
-    print(f"Project root set to: {project.root_dir}")
-except (FileNotFoundError, NotADirectoryError) as e:
-    print(f"Error: {e}", file=sys.stderr)
-    sys.exit(1)
-```
-
-### Documentation
-- Use docstrings for all public functions, classes, and modules
-- Follow Google-style docstring format with Args and Returns sections
-- Include examples when helpful
-
-Example from `src/mini_opencode/tools/fs/write.py`:
-```python
-@tool("write", parse_docstring=True)
-def write_tool(
-    runtime: ToolRuntime,
-    path: str,
-    content: str = "",
-) -> str:
-    """
-    Write content to a file. Can be used to create or overwrite a file.
-
-    Args:
-        path: The absolute path to the file. Only absolute paths are supported.
-        content: The text to write to the file.
-    """
-```
-
-### Path Handling
-- Always use `pathlib.Path` for file paths
-- Validate paths are absolute before using them
-- Provide helpful suggestions when relative paths are provided
-
-Example from `src/mini_opencode/tools/fs/text_editor.py`:
-```python
-def validate_path(self, path: Path):
-    if not path.is_absolute():
-        suggested_path = Path.cwd().resolve() / path
-        raise ValueError(
-            f"The path {path} is not an absolute path, it should start with `/`. Do you mean {suggested_path}?"
-        )
-```
-
-### Tool Development Guidelines
-- All tools should use the `@tool` decorator with `parse_docstring=True`
-- Include comprehensive docstrings with clear parameter descriptions
-- Return meaningful error messages with suggestions
-- Use the `generate_reminders` function from `mini_opencode.tools.reminders`
-
-### Project Structure Conventions
-- Keep related functionality in modules under appropriate directories:
-  - `agents/` - Agent implementations and state management
-  - `tools/` - Tool implementations (file operations, terminal, web, etc.)
-  - `cli/` - CLI and TUI components
-  - `models/` - LLM model configurations
-  - `prompts/` - Prompt templates
-  - `config/` - Configuration management
-  - `skills/` - Agent Skills system (loader, parser, and types)
-
-### Configuration Management
-- Use `config.yaml` for application configuration
-- Access configuration via `mini_opencode.config.get_config_section()`
-- Support environment variables for API keys and sensitive data
-
-### Textual UI Development
-- Follow Textual framework conventions for UI components
-- Use CSS for styling with theme variables (`$background`, `$primary`, etc.)
-- Implement responsive layouts with containers
-
-## Project Rules
-
-The project includes these key guidelines:
-- mini-opencode is a lightweight experimental AI Coding Agent
-- Built with LangGraph for stateful, multi-step reasoning
-- Supports comprehensive tool use (file operations, terminal, web search, etc.)
-- Maintains conversation history and todo list in state
-- Configurable through `config.yaml`
-- Supports Slash Commands (e.g., `/clear`, `/resume`, `/exit`) with auto-completion and suggestion navigation
-- Supports MCP (Model Context Protocol) server integration
-- Supports all kinds of Agent Skills
-
-## Environment Variables
-- `DEEPSEEK_API_KEY` - DeepSeek API key
-- `ARK_API_KEY` - Doubao/ARK API key  
-- `FIRECRAWL_API_KEY` - Firecrawl API key for web crawling
-- `TAVILY_API_KEY` - Tavily API key for web search
-- `PROJECT_ROOT` - Project root directory (default: current directory)
-- `MINI_OPENCODE_CONFIG` - Path to config file (default: `config.yaml`)
-
-## Key Principles
-1. **Minimal Infrastructure**: Keep the codebase simple and hackable
-2. **Tool Use**: Implement comprehensive, well-documented tools
-3. **State Management**: Maintain conversation context and task lists
-4. **Configurability**: Make components easy to customize
-5. **Error Handling**: Provide helpful error messages with suggestions
-6. **Type Safety**: Use type hints throughout the codebase
+## 6. Configuration
+- **Application Config**: Managed via `config.yaml` (see `config.example.yaml` for a template). This file controls model selection (DeepSeek, Doubao, Kimi), tool activation, and MCP server integrations.
+- **Environment**: `.env` file handles API keys for LLM providers and web tools (Tavily, Firecrawl).
+- **Agent State**: Persistent state is managed through LangGraph checkpointers, allowing session resumption.
