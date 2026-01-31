@@ -26,6 +26,7 @@
 - **🛠️ 完善的工具集**：包含文件操作（`read`, `write`, `edit`）、文件系统导航（`ls`, `tree`, `grep`）、终端命令（`bash`）、网络搜索（`tavily`）以及网页爬取（`firecrawl`）。
 - **🔌 可扩展架构**：支持 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)，可轻松集成外部工具和服务器。
 - **🚀 智能体技能系统**：动态加载特定的指令、脚本和资源（Skills），以提升在特定任务（如前端设计）上的表现。
+- **🧠 智能上下文管理**：内置总结（Summarization）中间件，在对话历史过长时自动压缩上下文，确保模型在长会话中的指令遵循能力。
 - **🎨 交互式 UI**：使用 [Textual](https://github.com/Textualize/textual) 构建的整洁终端界面，支持深浅色模式自动切换及模型响应流式输出。
 - **⚡️ 斜杠命令**：通过 `/clear`（重置聊天）、`/resume`（恢复会话）和 `/exit`（退出）等命令快速访问功能，支持自动补全建议。
 - **⚙️ 高度可配置**：灵活的 YAML 配置文件，支持自定义模型参数、工具及 API 密钥。
@@ -120,6 +121,7 @@ mini-opencode/
 │   ├── agents/           # 核心智能体逻辑与状态定义
 │   ├── cli/              # 终端 UI (Textual) 组件
 │   ├── config/           # 配置加载与校验
+│   ├── middlewares/      # 智能体中间件（如总结中间件）
 │   ├── models/           # LLM 模型工厂与设置
 │   ├── prompts/          # 提示词模板 (Jinja2)
 │   ├── skills/           # 技能系统实现（加载器、解析器、类型）

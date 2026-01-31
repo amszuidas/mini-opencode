@@ -10,6 +10,7 @@ mini-OpenCode is a lightweight, experimental AI Coding Agent inspired by Deer-Co
 - **Agent Logic**: The core agent is defined in `src/mini_opencode/agents/coding_agent.py`, using `create_agent` from LangGraph.
 - **UI Layer**: A terminal-based interface built with **Textual** (`src/mini_opencode/cli/`), providing streaming responses and interactive components.
 - **Tooling System**: A modular toolset in `src/mini_opencode/tools/` covering file I/O, filesystem navigation, shell execution, and web research.
+- **Middleware System**: A flexible middleware layer (`src/mini_opencode/middlewares/`) that enhances agent behavior. Currently includes a `SummarizationMiddleware` for automatic context compression when token limits are approached.
 - **Skills System**: A dynamic system (`src/mini_opencode/skills/`) that loads specialized instructions and resources from the `skills/` directory to enhance agent capabilities.
 
 ## 2. Build & Commands
@@ -44,6 +45,6 @@ mini-OpenCode follows strict Python coding standards to ensure reliability and m
 - **Tool Execution**: The `bash` tool executes shell commands; agents should exercise caution and avoid destructive operations unless explicitly requested.
 
 ## 6. Configuration
-- **Application Config**: Managed via `config.yaml` (see `config.example.yaml` for a template). This file controls model selection (DeepSeek, Doubao, Kimi), tool activation, and MCP server integrations.
+- **Application Config**: Managed via `config.yaml` (see `config.example.yaml` for a template). This file controls model selection (DeepSeek, Doubao, Kimi), tool activation, middleware (e.g., summarization thresholds), and MCP server integrations.
 - **Environment**: `.env` file handles API keys for LLM providers and web tools (Tavily, Firecrawl).
 - **Agent State**: Persistent state is managed through LangGraph checkpointers, allowing session resumption.

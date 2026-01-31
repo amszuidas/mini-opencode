@@ -26,6 +26,7 @@
 - **🛠️ Comprehensive Toolset**: Includes tools for file operations (`read`, `write`, `edit`), filesystem navigation (`ls`, `tree`, `grep`), terminal commands (`bash`), web search (`tavily`), and web crawling (`firecrawl`).
 - **🔌 Extensible Architecture**: Supports [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) for integrating external tools and servers.
 - **🚀 Agent Skills System**: Dynamically loads specialized instructions, scripts, and resources (Skills) to improve performance on specific tasks (e.g., frontend design).
+- **🧠 Intelligent Context Management**: Built-in Summarization middleware to automatically compress long conversation history, maintaining model performance over extended sessions.
 - **🎨 Interactive UI**: Features a clean terminal-based interface using [Textual](https://github.com/Textualize/textual), with support for automatic dark/light mode switching and streaming model responses.
 - **⚡️ Slash Commands**: Quickly access features with commands like `/clear` to reset chat, `/resume` to restore sessions, and `/exit` to quit, complete with auto-suggestions.
 - **⚙️ Highly Configurable**: flexible YAML-based configuration for models, tools, and API keys.
@@ -120,6 +121,7 @@ mini-opencode/
 │   ├── agents/           # Core agent logic & state definitions
 │   ├── cli/              # Terminal UI (Textual) components
 │   ├── config/           # Configuration loading & validation
+│   ├── middlewares/      # Agent middleware (e.g., summarization)
 │   ├── models/           # LLM model factory & setup
 │   ├── prompts/          # Prompt templates (Jinja2)
 │   ├── skills/           # Skills system implementation (loader, parser, types)
