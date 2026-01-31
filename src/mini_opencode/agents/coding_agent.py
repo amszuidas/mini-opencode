@@ -8,6 +8,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from mini_opencode import project
 from mini_opencode.config import get_config_section
+from mini_opencode.middlewares import get_summarization_middleware
 from mini_opencode.models import init_chat_model
 from mini_opencode.prompts import apply_prompt_template
 from mini_opencode.skills import load_skills
@@ -88,13 +89,18 @@ def create_coding_agent(
     skills_list_str = "\n".join(
         [f"- {skill.name}: {skill.path}\n  {skill.description}" for skill in skills]
     )
-
     system_prompt = apply_prompt_template(
         "coding_agent",
         PROJECT_ROOT=project.root_dir,
         SKILLS_PATH=str(skills_dir.absolute()),
         SKILLS_LIST=skills_list_str,
     )
+
+    # Initialize middleware
+    middleware = []
+    summarization_middleware = get_summarization_middleware(model=model)
+    if summarization_middleware:
+        middleware.append(summarization_middleware)
 
     return create_agent(
         model=model,
@@ -105,6 +111,7 @@ def create_coding_agent(
         system_prompt=system_prompt,
         state_schema=CodingAgentState,
         checkpointer=checkpointer,
+        middleware=middleware,
         name="coding_agent",
         **kwargs,
     )

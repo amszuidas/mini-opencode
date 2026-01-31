@@ -5,7 +5,7 @@ from langchain.tools import ToolRuntime, tool
 from mini_opencode.tools.reminders import generate_reminders
 
 
-@tool("get_today_date", parse_docstring=True)
+@tool("get_today_date")
 def get_today_date_tool(
     runtime: ToolRuntime,
 ) -> str:

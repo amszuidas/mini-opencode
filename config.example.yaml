@@ -28,6 +28,16 @@ models:
     # timeout: 60
     # max_retries: 3
 
+
+middlewares:
+  enabled:
+    - summarization
+  configs:
+    summarization:
+      trigger_tokens: 8192
+      keep_messages: 10
+
+
 tools:
   enabled:
     - edit
