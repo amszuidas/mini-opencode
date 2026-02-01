@@ -6,7 +6,7 @@
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Code Style: Google](https://img.shields.io/badge/code%20style-google-3666d6.svg)](https://google.github.io/styleguide/pyguide.html)
 
-[English](./README.md)
+[English](./README.md) | [繁體中文](./README.zh-TW.md) | [日本語](./README.ja.md)
 
 **mini-OpenCode** 是一个轻量级、实验性的 AI 编程智能体，灵感源自 [Deer-Code](https://github.com/MagicCube/deer-code) 和 [OpenCode](https://github.com/anomalyco/opencode)。它展示了大语言模型（LLM）如何在极简的基础设施下进行规划、推理并迭代编写代码。本项目基于 [LangGraph](https://github.com/langchain-ai/langgraph) 构建，旨在为理解和构建智能体编程系统提供一个可扩展的基础。
 
