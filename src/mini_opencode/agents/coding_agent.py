@@ -19,7 +19,6 @@ from mini_opencode.tools import (
     grep_tool,
     ls_tool,
     read_tool,
-    todo_write_tool,
     tree_tool,
     web_crawl_tool,
     web_search_tool,
@@ -35,7 +34,6 @@ TOOL_MAP = {
     "grep": grep_tool,
     "ls": ls_tool,
     "read": read_tool,
-    "todo_write": todo_write_tool,
     "tree": tree_tool,
     "web_crawl": web_crawl_tool,
     "web_search": web_search_tool,
@@ -63,9 +61,7 @@ def create_coding_agent(
     enabled_tools_config = get_config_section(["tools", "enabled"])
     if enabled_tools_config is not None and isinstance(enabled_tools_config, list):
         tools = [TOOL_MAP[name] for name in enabled_tools_config if name in TOOL_MAP]
-        # Add todo_write_tool and get_today_date_tool if not enabled
-        if "todo_write" not in enabled_tools_config:
-            tools.append(todo_write_tool)
+        # Add get_today_date_tool if not enabled
         if "get_today_date" not in enabled_tools_config:
             tools.append(get_today_date_tool)
     else:
@@ -76,7 +72,6 @@ def create_coding_agent(
             ls_tool,
             read_tool,
             get_today_date_tool,
-            todo_write_tool,
             tree_tool,
             web_crawl_tool,
             web_search_tool,

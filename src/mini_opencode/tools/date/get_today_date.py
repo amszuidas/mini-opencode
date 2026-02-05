@@ -1,17 +1,12 @@
 from datetime import datetime
 
-from langchain.tools import ToolRuntime, tool
-
-from mini_opencode.tools.reminders import generate_reminders
+from langchain.tools import tool
 
 
 @tool("get_today_date")
-def get_today_date_tool(
-    runtime: ToolRuntime,
-) -> str:
+def get_today_date_tool() -> str:
     """
     Get the current date in YYYY-MM-DD format.
     """
     today = datetime.now().strftime("%Y-%m-%d")
-    reminders = generate_reminders(runtime)
-    return f"Today's date is {today}.{reminders}"
+    return f"Today's date is {today}."

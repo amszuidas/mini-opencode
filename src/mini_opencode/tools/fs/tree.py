@@ -1,9 +1,7 @@
 import fnmatch
 from pathlib import Path
 
-from langchain.tools import ToolRuntime, tool
-
-from mini_opencode.tools.reminders import generate_reminders
+from langchain.tools import tool
 
 from .ignore import DEFAULT_IGNORE_PATTERNS
 
@@ -109,7 +107,6 @@ def generate_tree(
 
 @tool("tree", parse_docstring=True)
 def tree_tool(
-    runtime: ToolRuntime,
     path: str | None = None,
     max_depth: int | None = 3,
 ) -> str:
@@ -125,7 +122,6 @@ def tree_tool(
     Returns:
         A tree-structured view of the directory as a string.
     """
-    reminders = generate_reminders(runtime)
 
     # Set search path
     search_path = Path(path).expanduser() if path else Path.cwd()
@@ -133,10 +129,10 @@ def tree_tool(
     try:
         # Validate path
         if not search_path.exists():
-            return f"Error: Path '{search_path}' does not exist.{reminders}"
+            return f"Error: Path '{search_path}' does not exist."
 
         if not search_path.is_dir():
-            return f"Error: Path '{search_path}' is not a directory.{reminders}"
+            return f"Error: Path '{search_path}' is not a directory."
 
         # Enforce max_depth constraint
         if max_depth is not None and max_depth > 3:
@@ -160,7 +156,7 @@ def tree_tool(
         output = "\n".join(lines)
 
         # Format the result
-        return f"Here's the result in {search_path}:\n\n```\n{output}\n```{reminders}"
+        return f"Here's the result in {search_path}:\n\n```\n{output}\n```"
 
     except Exception as e:
-        return f"Error: {str(e)}{reminders}"
+        return f"Error: {str(e)}"

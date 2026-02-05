@@ -1,16 +1,13 @@
 import fnmatch
 from pathlib import Path
 
-from langchain.tools import ToolRuntime, tool
-
-from mini_opencode.tools.reminders import generate_reminders
+from langchain.tools import tool
 
 from .ignore import DEFAULT_IGNORE_PATTERNS
 
 
 @tool("ls", parse_docstring=True)
 def ls_tool(
-    runtime: ToolRuntime,
     path: str,
     match: list[str] | None = None,
     ignore: list[str] | None = None,
@@ -25,22 +22,20 @@ def ls_tool(
     Returns:
         A formatted string listing the files and directories in the path, or an error message.
     """
-    reminders = generate_reminders(runtime)
-
     _path = Path(path)
     if not _path.is_absolute():
-        return f"Error: the path {path} is not an absolute path. Please provide an absolute path.{reminders}"
+        return f"Error: the path {path} is not an absolute path. Please provide an absolute path."
     if not _path.exists():
-        return f"Error: the path {path} does not exist. Please provide a valid path.{reminders}"
+        return f"Error: the path {path} does not exist. Please provide a valid path."
 
     if not _path.is_dir():
-        return f"Error: the path {path} is not a directory. Please provide a valid directory path.{reminders}"
+        return f"Error: the path {path} is not a directory. Please provide a valid directory path."
 
     # Get all items in the directory
     try:
         items = list(_path.iterdir())
     except PermissionError:
-        return f"Error: permission denied to access the path {path}.{reminders}"
+        return f"Error: permission denied to access the path {path}."
 
     # Sort items: directories first, then files, both alphabetically
     items.sort(key=lambda x: (x.is_file(), x.name.lower()))
@@ -72,7 +67,7 @@ def ls_tool(
 
     # Format the output
     if not items:
-        return f"No items found in {path}.{reminders}"
+        return f"No items found in {path}."
 
     result_lines = []
     for item in items:
@@ -81,8 +76,4 @@ def ls_tool(
         else:
             result_lines.append(item.name)
 
-    return (
-        f"Here's the result in {path}: \n```\n"
-        + "\n".join(result_lines)
-        + f"\n```{reminders}"
-    )
+    return f"Here's the result in {path}: \n```\n" + "\n".join(result_lines) + "\n```"

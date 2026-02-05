@@ -1,16 +1,13 @@
 import subprocess
 from typing import Literal
 
-from langchain.tools import ToolRuntime, tool
-
-from mini_opencode.tools.reminders import generate_reminders
+from langchain.tools import tool
 
 from .ignore import DEFAULT_IGNORE_PATTERNS
 
 
 @tool("grep", parse_docstring=True)
 def grep_tool(
-    runtime: ToolRuntime,
     pattern: str,
     path: str | None = None,
     glob: str | None = None,
@@ -104,7 +101,6 @@ def grep_tool(
     cmd.append(search_path)
 
     # Execute ripgrep
-    reminders = generate_reminders(runtime)
     try:
         result = subprocess.run(
             cmd,
@@ -115,7 +111,7 @@ def grep_tool(
 
         # Check for errors (exit code 2 indicates error, 1 means no matches)
         if result.returncode == 2:
-            return f"Error executing ripgrep: {result.stderr.strip()}{reminders}"
+            return f"Error executing ripgrep: {result.stderr.strip()}"
 
         output = result.stdout
 
@@ -128,13 +124,11 @@ def grep_tool(
 
         # Format the result
         if output:
-            return (
-                f"Here's the result in {search_path}:\n\n```\n{output}\n```{reminders}"
-            )
+            return f"Here's the result in {search_path}:\n\n```\n{output}\n```"
         elif result.returncode == 1:
-            return f"No matches found in {search_path}.{reminders}"
+            return f"No matches found in {search_path}."
         else:
-            return f"Search completed but no output was returned.{reminders}"
+            return "Search completed but no output was returned."
 
     except Exception as e:
-        return f"Unexpected error: {str(e)}{reminders}"
+        return f"Unexpected error: {str(e)}"
