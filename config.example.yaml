@@ -31,7 +31,6 @@ middlewares:
 
 tools:
   enabled:
-    - bash
     - web_crawl
     - web_search
   configs:

@@ -13,7 +13,6 @@ from mini_opencode.models import init_chat_model
 from mini_opencode.prompts import apply_prompt_template
 from mini_opencode.skills import load_skills
 from mini_opencode.tools import (
-    bash_tool,
     get_today_date_tool,
     web_crawl_tool,
     web_search_tool,
@@ -22,7 +21,6 @@ from mini_opencode.tools import (
 from .state import CodingAgentState
 
 TOOL_MAP = {
-    "bash": bash_tool,
     "get_today_date": get_today_date_tool,
     "web_crawl": web_crawl_tool,
     "web_search": web_search_tool,
@@ -54,7 +52,6 @@ def create_coding_agent(
             tools.append(get_today_date_tool)
     else:
         tools = [
-            bash_tool,
             get_today_date_tool,
             web_crawl_tool,
             web_search_tool,
