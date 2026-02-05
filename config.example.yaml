@@ -34,9 +34,6 @@ tools:
     - edit
     - read
     - write
-    - grep
-    - ls
-    - tree
     - bash
     - web_crawl
     - web_search

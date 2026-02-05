@@ -29,9 +29,6 @@ def bash_tool(
 
     Never use this tool to perform any harmful or dangerous operations.
 
-    - Use `ls`, `grep` and `tree` tools for file system operations instead of this tool.
-    - Use `write` tool to create new files.
-
     Args:
         command: The command to execute.
         reset_cwd: Whether to reset the current working directory to the project root directory.
