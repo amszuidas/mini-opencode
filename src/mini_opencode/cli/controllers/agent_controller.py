@@ -9,7 +9,9 @@ from langchain.messages import (
     HumanMessage,
     ToolMessage,
 )
+from langchain_core.messages import BaseMessage
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import Overwrite
 from textual.app import App
 from textual.widgets import TabbedContent
 
@@ -95,7 +97,15 @@ class AgentController:
                 config={"recursion_limit": 100, "thread_id": "thread_1"},
             ):
                 if event_type == "messages":
-                    message_chunk, _ = chunk
+                    if isinstance(chunk, Overwrite):
+                        chunk = chunk.value
+                    if isinstance(chunk, BaseMessage):
+                        message_chunk = chunk
+                    elif isinstance(chunk, (tuple, list)) and len(chunk) > 0:
+                        message_chunk = chunk[0]
+                    else:
+                        continue
+
                     if isinstance(message_chunk, AIMessageChunk):
                         if current_ai_message is None:
                             current_ai_message = message_chunk
@@ -111,13 +121,27 @@ class AgentController:
                     # Node finished. Reset current_ai_message for next potential AI response
                     current_ai_message = None
 
+                    if isinstance(chunk, Overwrite):
+                        chunk = chunk.value
+                    if not isinstance(chunk, dict):
+                        continue
+
                     roles = chunk.keys()
                     for role in roles:
                         node_output = chunk[role]
                         if node_output is None or not isinstance(node_output, dict):
                             continue
 
-                        messages: list[AnyMessage] = node_output.get("messages", [])
+                        messages_value = node_output.get("messages", [])
+                        if isinstance(messages_value, Overwrite):
+                            messages_value = messages_value.value
+                        if isinstance(messages_value, BaseMessage):
+                            messages = [messages_value]
+                        elif isinstance(messages_value, (list, tuple)):
+                            messages = list(messages_value)
+                        else:
+                            continue
+
                         for message in messages:
                             if isinstance(message, AIMessage):
                                 # Update with final message (includes complete tool calls)
