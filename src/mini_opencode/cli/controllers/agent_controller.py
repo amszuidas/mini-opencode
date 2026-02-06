@@ -118,9 +118,6 @@ class AgentController:
                             )
 
                 elif event_type == "updates":
-                    # Node finished. Reset current_ai_message for next potential AI response
-                    current_ai_message = None
-
                     if isinstance(chunk, Overwrite):
                         chunk = chunk.value
                     if not isinstance(chunk, dict):
@@ -142,16 +139,41 @@ class AgentController:
                         else:
                             continue
 
-                        for message in messages:
+                        # Filter messages to only include those after the current user message.
+                        # This prevents re-processing old messages if the node returns the full history.
+                        user_idx = -1
+                        for i, m in enumerate(messages):
+                            if (
+                                m.type == user_message.type
+                                and m.content == user_message.content
+                            ):
+                                user_idx = i
+                        new_messages = messages[user_idx + 1 :]
+
+                        # Use a flag to track if we've handled the first AI message in this update
+                        # by updating the currently streaming message.
+                        first_ai_in_node = True
+                        for message in new_messages:
                             if isinstance(message, AIMessage):
-                                # Update with final message (includes complete tool calls)
-                                self.update_incoming_message(message, update_tools=True)
+                                if first_ai_in_node and current_ai_message is not None:
+                                    # Update with final message (includes complete tool calls)
+                                    self.update_incoming_message(
+                                        message, update_tools=True
+                                    )
+                                else:
+                                    # Not added via streaming yet, or subsequent AI message in same node
+                                    self.process_incoming_message(message)
+
+                                first_ai_in_node = False
                                 if message.tool_calls:
                                     self.process_tool_call_message(message)
                             elif isinstance(message, ToolMessage):
                                 # Tool results are not streamed, add them normally
                                 self.process_incoming_message(message)
                                 self.process_tool_message(message)
+
+                    # Node finished. Reset current_ai_message for next potential AI response
+                    current_ai_message = None
         except Exception as e:
             error_message = AIMessage(
                 content=f"❌ **An error occurred:** {str(e)}\n\nPlease try again."
