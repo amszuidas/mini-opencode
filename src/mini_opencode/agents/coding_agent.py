@@ -103,7 +103,7 @@ def create_coding_agent(
         memory=memory,
         backend=backend,
         checkpointer=checkpointer,
-        name="coding_agent",
+        name="mini-opencode",
         **kwargs,
     )
 
