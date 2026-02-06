@@ -21,16 +21,22 @@
 
 ## ✨ 特性
 
-- **🤖 智能編程智能體**：利用 LangGraph 實現有狀態的多步推理與執行。
-- **📝 上下文感知任務管理**：內置 TODO 系統，用於跟蹤複雜多步任務的進度。
-- **🛠️ 完善的工具集**：包含檔案操作（`read`, `write`, `edit`）、檔案系統導航（`ls`, `tree`, `grep`）、終端命令（`bash`）、網路搜尋（`tavily`）以及網頁爬取（`firecrawl`）。
-- **🔌 可擴展架構**：支持 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)，可輕鬆集成外部工具和伺服器。
-- **🚀 智能體技能系統**：動態載入特定的指令、腳本和資源（Skills），以提升在特定任務（如前端設計）上的表現。
-- **🧠 智能上下文管理**：內置總結（Summarization）中間件，在對話歷史過長時自動壓縮上下文，確保模型在長會話中的指令遵循能力。
-- **🎨 交互式 UI**：使用 [Textual](https://github.com/Textualize/textual) 建構的整潔終端界面，支持深淺色模式自動切換及模型響應串流輸出。
-- **⚡️ 斜杠命令**：通過 `/clear`（重置聊天）、`/resume`（恢復會話）和 `/exit`（退出）等命令快速訪問功能，支持自動補全建議。
-- **⚙️ 高度可配置**：靈活的 YAML 配置文件，支持自定義模型參數、工具及 API 金鑰。
-- **🔒 類型安全**：全量類型提示（Python 3.12+），確保程式碼可靠性及開發體驗。
+- **🤖 DeepAgents 驅動**：基於 LangChain 生態的 `create_deep_agent` 建構，為智能體編程提供穩健基礎。
+- **📝 集成任務管理**：內置 `write_todos` 工具，高效管理和追蹤複雜的多步任務。
+- **🛠️ 核心工具集**：
+    - **檔案操作**：內置 `ls`、`read_file`、`write_file`、`edit_file`、`glob` 和 `grep` 工具。
+    - **Shell 執行**：內置 `execute` 工具，安全執行 Shell 命令。
+    - **網路能力**：可配置的網路搜尋和爬取工具，支持 **MCP (Model Context Protocol)** 擴展。
+- **🧩 子智能體機制**：包含默認的 `general-purpose` 子智能體，用於處理輔助任務。
+- **🚀 技能系統**：自動識別並利用用戶定義的 Skills，增強智能體能力。
+- **🧠 智能上下文管理**：
+    - **AGENTS.md 注入**：自動檢測並將 `AGENTS.md` 內容注入上下文。
+    - **SummarizationMiddleware**：當上下文達到限制時自動總結對話歷史。
+    - **大輸出處理**：自動將大型工具輸出轉存至檔案系統，防止上下文窗口飽和。
+    - **魯棒性**：包含 `PatchToolCallsMiddleware`，優雅處理懸空的工具調用。
+- **🎨 精美 TUI**：基於 Textual 的精緻終端用戶界面，支持深淺色模式切換和串流輸出。
+- **⚡️ 斜杠命令**：支持斜杠命令（如 `/clear`、`/exit`）以快速執行操作。
+- **⚙️ 高度可配置**：通過 YAML 配置完全自定義模型、工具和行為。
 
 ## 📖 目錄
 
@@ -40,7 +46,6 @@
 - [配置說明](#-配置說明)
 - [使用方法](#-使用方法)
 - [專案結構](#-專案結構)
-- [開發指南](#-開發指南)
 - [參與貢獻](#-參與貢獻)
 - [致謝](#-致謝)
 - [Star History](#-star-history)
@@ -78,7 +83,6 @@
     ```ini
     DEEPSEEK_API_KEY=your_key_here
     # 可選：
-    ARK_API_KEY=your_doubao_key
     KIMI_API_KEY=your_kimi_key
     TAVILY_API_KEY=your_tavily_key
     FIRECRAWL_API_KEY=your_firecrawl_key
@@ -119,44 +123,23 @@ make dev
 ```text
 mini-opencode/
 ├── src/mini_opencode/
-│   ├── agents/           # 核心智能體邏輯與狀態定義
+│   ├── agents/           # 智能體創建邏輯 (基於 deepagents)
 │   ├── cli/              # 終端 UI (Textual) 組件
 │   ├── config/           # 配置載入與校驗
-│   ├── middlewares/      # 智能體中間件（如總結中間件）
 │   ├── models/           # LLM 模型工廠與設置
 │   ├── prompts/          # 提示詞模板 (Jinja2)
-│   ├── skills/           # 技能系統實現（載入器、解析器、類型）
-│   ├── tools/            # 工具實現
-│   │   ├── file/         # 檔案 I/O (read, write, edit)
-│   │   ├── fs/           # 檔案系統 (ls, tree, grep)
-│   │   ├── terminal/     # Bash 執行
-│   │   ├── web/          # 搜尋與爬取
+│   ├── tools/            # 額外工具實現
+│   │   ├── date/         # 日期工具
 │   │   ├── mcp/          # MCP 工具集成
-│   │   └── todo/         # 任務管理
+│   │   └── web/          # 網路搜尋與爬取
 │   ├── main.py           # CLI 入口
 │   └── project.py        # 專案上下文管理器
 ├── skills/               # 智能體技能（指令、腳本及參考資料）
-├── AGENTS.md             # 智能體開發指南
-├── Makefile              # 建構與運行命令
 ├── config.example.yaml   # 示例配置模板
 ├── langgraph.example.json# 示例 LangGraph 配置模板
+├── Makefile              # 建構與運行命令
 └── pyproject.toml        # 專案依賴與元數據
 ```
-
-## 🔧 開發指南
-
-### 添加新工具
-1.  在 `src/mini_opencode/tools/` 中建立一個新檔案。
-2.  使用 `@tool` 裝飾器並設置 `parse_docstring=True`。
-3.  添加 Google 風格的 docstrings 以進行參數解析。
-4.  在 `src/mini_opencode/agents/coding_agent.py` 中註冊該工具。
-
-### 程式碼風格
-- **類型提示**：所有函數必須包含類型提示。
-- **Docstrings**：要求使用 Google 風格。
-- **命名規範**：函數/變數使用 `snake_case`，類名使用 `PascalCase`。
-
-詳見 [AGENTS.md](AGENTS.md) 獲取詳細的開發準則。
 
 ## 🤝 參與貢獻
 
@@ -167,6 +150,8 @@ mini-opencode/
 3.  提交更改（遵循 [Semantic Commits](https://www.conventionalcommits.org/) 規範，例如 `git commit -m 'feat: Add some AmazingFeature'`)
 4.  推送到分支 (`git push origin feature/AmazingFeature`)
 5.  開啟一個 Pull Request
+
+詳見 [CONTRIBUTING.md](CONTRIBUTING.md) 獲取詳細的開發準則。
 
 ## 🙏 致謝
 

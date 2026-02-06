@@ -21,16 +21,22 @@
 
 ## ✨ Features
 
-- **🤖 Intelligent Coding Agent**: Leverages LangGraph for stateful, multi-step reasoning and execution.
-- **📝 Context-Aware Task Management**: Built-in TODO system to track progress on complex, multi-step tasks.
-- **🛠️ Comprehensive Toolset**: Includes tools for file operations (`read`, `write`, `edit`), filesystem navigation (`ls`, `tree`, `grep`), terminal commands (`bash`), web search (`tavily`), and web crawling (`firecrawl`).
-- **🔌 Extensible Architecture**: Supports [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) for integrating external tools and servers.
-- **🚀 Agent Skills System**: Dynamically loads specialized instructions, scripts, and resources (Skills) to improve performance on specific tasks (e.g., frontend design).
-- **🧠 Intelligent Context Management**: Built-in Summarization middleware to automatically compress long conversation history, maintaining model performance over extended sessions.
-- **🎨 Interactive UI**: Features a clean terminal-based interface using [Textual](https://github.com/Textualize/textual), with support for automatic dark/light mode switching and streaming model responses.
-- **⚡️ Slash Commands**: Quickly access features with commands like `/clear` to reset chat, `/resume` to restore sessions, and `/exit` to quit, complete with auto-suggestions.
-- **⚙️ Highly Configurable**: flexible YAML-based configuration for models, tools, and API keys.
-- **🔒 Type Safe**: Fully typed codebase (Python 3.12+) ensuring reliability and developer experience.
+- **🤖 DeepAgents Powered**: Built on `create_deep_agent` from the LangChain ecosystem, providing a robust foundation for agentic coding.
+- **📝 Integrated Task Management**: Built-in `write_todos` tool to manage and track complex, multi-step tasks effectively.
+- **🛠️ Essential Toolset**:
+    - **File Operations**: Built-in tools for `ls`, `read_file`, `write_file`, `edit_file`, `glob`, and `grep`.
+    - **Shell Execution**: Built-in `execute` tool for running shell commands safely.
+    - **Web Capabilities**: Configurable web search and web crawling tools, with support for **MCP (Model Context Protocol)** extensions.
+- **🧩 SubAgents Mechanism**: Includes a default `general-purpose` SubAgent to handle auxiliary tasks.
+- **🚀 Skills System**: Automatically recognizes and utilizes user-defined Skills to enhance agent capabilities.
+- **🧠 Intelligent Context Management**:
+    - **AGENTS.md Injection**: Automatically detects and injects `AGENTS.md` content into the context.
+    - **SummarizationMiddleware**: Automatically summarizes conversation history when context limits are reached.
+    - **Large Output Handling**: Automatically evicts large tool outputs to the file system to prevent context window saturation.
+    - **Robustness**: Includes `PatchToolCallsMiddleware` to handle dangling tool calls gracefully.
+- **🎨 Beautiful TUI**: A polished Terminal User Interface based on Textual, featuring dark/light mode switching and streaming output.
+- **⚡️ Slash Commands**: Support for slash commands (e.g., `/clear`, `/exit`) for quick actions.
+- **⚙️ Highly Configurable**: Fully customizable models, tools, and behaviors via YAML configuration.
 
 ## 📖 Table of Contents
 
@@ -40,7 +46,6 @@
 - [Configuration](#-configuration)
 - [Usage](#-usage)
 - [Project Structure](#-project-structure)
-- [Development](#-development)
 - [Contributing](#-contributing)
 - [Acknowledgments](#-acknowledgments)
 - [Star History](#-star-history)
@@ -78,7 +83,6 @@
     ```ini
     DEEPSEEK_API_KEY=your_key_here
     # Optional:
-    ARK_API_KEY=your_doubao_key
     KIMI_API_KEY=your_kimi_key
     TAVILY_API_KEY=your_tavily_key
     FIRECRAWL_API_KEY=your_firecrawl_key
@@ -119,44 +123,23 @@ Then open [https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024](ht
 ```text
 mini-opencode/
 ├── src/mini_opencode/
-│   ├── agents/           # Core agent logic & state definitions
+│   ├── agents/           # Agent creation logic (based on deepagents)
 │   ├── cli/              # Terminal UI (Textual) components
 │   ├── config/           # Configuration loading & validation
-│   ├── middlewares/      # Agent middleware (e.g., summarization)
 │   ├── models/           # LLM model factory & setup
 │   ├── prompts/          # Prompt templates (Jinja2)
-│   ├── skills/           # Skills system implementation (loader, parser, types)
-│   ├── tools/            # Tool implementations
-│   │   ├── file/         # File I/O (read, write, edit)
-│   │   ├── fs/           # File system (ls, tree, grep)
-│   │   ├── terminal/     # Bash execution
-│   │   ├── web/          # Search & Crawl
+│   ├── tools/            # Additional tool implementations
+│   │   ├── date/         # Date tool
 │   │   ├── mcp/          # MCP tools integration
-│   │   └── todo/         # Task management
+│   │   └── web/          # Web Search & Crawl
 │   ├── main.py           # CLI entry point
 │   └── project.py        # Project context manager
 ├── skills/               # Agent Skills (instructions, scripts, and references)
-├── AGENTS.md             # Developer guide for agents
-├── Makefile              # Build & run commands
 ├── config.example.yaml   # Template configuration
 ├── langgraph.example.json# Template LangGraph config
+├── Makefile              # Build & run commands
 └── pyproject.toml        # Project dependencies & metadata
 ```
-
-## 🔧 Development
-
-### Adding New Tools
-1.  Create a new file in `src/mini_opencode/tools/`.
-2.  Use the `@tool` decorator with `parse_docstring=True`.
-3.  Add Google-style docstrings for argument parsing.
-4.  Register the tool in `src/mini_opencode/agents/coding_agent.py`.
-
-### Code Style
-- **Type Hints**: Mandatory for all functions.
-- **Docstrings**: Google style required.
-- **Naming**: `snake_case` for functions/vars, `PascalCase` for classes.
-
-See [AGENTS.md](AGENTS.md) for detailed development guidelines.
 
 ## 🤝 Contributing
 
@@ -167,6 +150,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3.  Commit your Changes (follow [Semantic Commits](https://www.conventionalcommits.org/), e.g., `git commit -m 'feat: Add some AmazingFeature'`)
 4.  Push to the Branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.
 
 ## 🙏 Acknowledgments
 
