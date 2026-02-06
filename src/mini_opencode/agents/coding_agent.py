@@ -59,6 +59,7 @@ def create_coding_agent(
             web_fetch_tool,
             web_search_tool,
         ]
+    tools = [*tools, *plugin_tools]
 
     # Initialize system prompt
     system_prompt = apply_prompt_template(
@@ -75,6 +76,10 @@ def create_coding_agent(
     # - `AnthropicPromptCachingMiddleware`: caching Anthropic prompts
     # - `PatchToolCallsMiddleware`: patching dangling tool calls in the messages history
 
+    # Initialize subagents
+    # create_deep_agent default supported subagents:
+    # - `general-purpose`: General-purpose agent for researching complex questions, searching for files and content, and executing multi-step tasks.
+
     # Initialize skills
     skills = []
     skills_dir = Path(project.root_dir) / "skills"
@@ -87,16 +92,16 @@ def create_coding_agent(
     if agents_md_path.exists():
         memory.append(str(agents_md_path.absolute()))
 
+    # Initialize backend
+    backend = FilesystemBackend(root_dir=project.root_dir)
+
     return create_deep_agent(
         model=model,
-        tools=[
-            *tools,
-            *plugin_tools,
-        ],
+        tools=tools,
         system_prompt=system_prompt,
         skills=skills,
         memory=memory,
-        backend=FilesystemBackend(root_dir=project.root_dir),
+        backend=backend,
         checkpointer=checkpointer,
         name="coding_agent",
         **kwargs,
