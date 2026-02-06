@@ -41,6 +41,12 @@ def create_coding_agent(
     model = init_chat_model()
 
     # Initialize tools
+    # create_deep_agent default supported tools:
+    # - `write_todos`: manage a todo list
+    # - `ls`, `read_file`, `write_file`, `edit_file`, `glob`, `grep`: file operations
+    # - `execute`: run shell commands
+    # - `task`: call subagents
+    # The `execute` tool allows running shell commands if the backend implements SandboxBackendProtocol. For non-sandbox backends, the execute tool will return an error message.
     enabled_tools_config = get_config_section(["tools", "enabled"])
     if enabled_tools_config is not None and isinstance(enabled_tools_config, list):
         tools = [TOOL_MAP[name] for name in enabled_tools_config if name in TOOL_MAP]
