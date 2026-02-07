@@ -42,7 +42,7 @@ def web_search_tool(query: str, max_results: int = 5) -> str:
 
     # The tool returns a list of results, we convert it to JSON string for consistency
     results = tool.invoke(query)
-    return json.dumps(results, ensure_ascii=False, indent=4)
+    return json.dumps(results, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

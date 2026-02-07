@@ -1,45 +1,26 @@
 import os
 from pathlib import Path
 
-from langchain.agents import create_agent
+from deepagents import create_deep_agent
+from deepagents.backends.local_shell import LocalShellBackend
 from langchain.tools import BaseTool
 from langgraph.checkpoint.base import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 
 from mini_opencode import project
 from mini_opencode.config import get_config_section
-from mini_opencode.middlewares import get_summarization_middleware
 from mini_opencode.models import init_chat_model
 from mini_opencode.prompts import apply_prompt_template
-from mini_opencode.skills import load_skills
 from mini_opencode.tools import (
-    bash_tool,
-    edit_tool,
-    get_today_date_tool,
-    grep_tool,
-    ls_tool,
-    read_tool,
-    todo_write_tool,
-    tree_tool,
-    web_crawl_tool,
+    get_current_date_tool,
+    web_fetch_tool,
     web_search_tool,
-    write_tool,
 )
 
-from .state import CodingAgentState
-
 TOOL_MAP = {
-    "bash": bash_tool,
-    "edit": edit_tool,
-    "get_today_date": get_today_date_tool,
-    "grep": grep_tool,
-    "ls": ls_tool,
-    "read": read_tool,
-    "todo_write": todo_write_tool,
-    "tree": tree_tool,
-    "web_crawl": web_crawl_tool,
+    "get_current_date": get_current_date_tool,
+    "web_fetch": web_fetch_tool,
     "web_search": web_search_tool,
-    "write": write_tool,
 }
 
 
@@ -60,59 +41,70 @@ def create_coding_agent(
     model = init_chat_model()
 
     # Initialize tools
+    # create_deep_agent default supported tools:
+    # - `write_todos`: manage a todo list
+    # - `ls`, `read_file`, `write_file`, `edit_file`, `glob`, `grep`: file operations
+    # - `execute`: run shell commands
+    # - `task`: call subagents
+    # The `execute` tool allows running shell commands if the backend implements SandboxBackendProtocol. For non-sandbox backends, the execute tool will return an error message.
     enabled_tools_config = get_config_section(["tools", "enabled"])
     if enabled_tools_config is not None and isinstance(enabled_tools_config, list):
         tools = [TOOL_MAP[name] for name in enabled_tools_config if name in TOOL_MAP]
-        # Add todo_write_tool and get_today_date_tool if not enabled
-        if "todo_write" not in enabled_tools_config:
-            tools.append(todo_write_tool)
-        if "get_today_date" not in enabled_tools_config:
-            tools.append(get_today_date_tool)
+        # Add get_current_date_tool if not enabled
+        if "get_current_date" not in enabled_tools_config:
+            tools.append(get_current_date_tool)
     else:
         tools = [
-            bash_tool,
-            edit_tool,
-            grep_tool,
-            ls_tool,
-            read_tool,
-            get_today_date_tool,
-            todo_write_tool,
-            tree_tool,
-            web_crawl_tool,
+            get_current_date_tool,
+            web_fetch_tool,
             web_search_tool,
-            write_tool,
         ]
+    tools = [*tools, *plugin_tools]
 
     # Initialize system prompt
-    skills_dir = Path(project.root_dir) / "skills"
-    skills = load_skills(skills_dir)
-    skills_list_str = "\n".join(
-        [f"- {skill.name}: {skill.path}\n  {skill.description}" for skill in skills]
-    )
     system_prompt = apply_prompt_template(
         "coding_agent",
         PROJECT_ROOT=project.root_dir,
-        SKILLS_PATH=str(skills_dir.absolute()),
-        SKILLS_LIST=skills_list_str,
     )
 
     # Initialize middleware
-    middleware = []
-    summarization_middleware = get_summarization_middleware(model=model)
-    if summarization_middleware:
-        middleware.append(summarization_middleware)
+    # create_deep_agent default supported middleware:
+    # - `TodoListMiddleware`: todo list management
+    # - `FilesystemMiddleware`: providing file system and optional `execution` tools
+    # - `SubAgentMiddleware`: providing subagents via a `task` tool
+    # - `SummarizationMiddleware`: providing context summarization
+    # - `AnthropicPromptCachingMiddleware`: caching Anthropic prompts
+    # - `PatchToolCallsMiddleware`: patching dangling tool calls in the messages history
 
-    return create_agent(
+    # Initialize subagents
+    # create_deep_agent default supported subagents:
+    # - `general-purpose`: General-purpose agent for researching complex questions, searching for files and content, and executing multi-step tasks.
+
+    # Initialize skills
+    skills = None
+    skills_dir = Path(project.root_dir) / "skills"
+    if skills_dir.exists():
+        skills = [str(skills_dir.absolute())]
+
+    # Initialize memory
+    memory = None
+    agents_md_path = Path(project.root_dir) / "AGENTS.md"
+    if agents_md_path.exists():
+        memory = [str(agents_md_path.absolute())]
+
+    # Initialize backend
+    # LocalShellBackend implements SandboxBackendProtocol, which allows `execute` tool to run shell commands in local environment.
+    backend = LocalShellBackend(root_dir=project.root_dir)
+
+    return create_deep_agent(
         model=model,
-        tools=[
-            *tools,
-            *plugin_tools,
-        ],
+        tools=tools,
         system_prompt=system_prompt,
-        state_schema=CodingAgentState,
+        skills=skills,
+        memory=memory,
+        backend=backend,
         checkpointer=checkpointer,
-        middleware=middleware,
-        name="coding_agent",
+        name="mini-opencode",
         **kwargs,
     )
 

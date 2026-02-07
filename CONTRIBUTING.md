@@ -75,29 +75,6 @@ Follow this order:
 2. Third-party imports
 3. Local application imports (`mini_opencode`)
 
-## 🔧 Adding New Tools
-
-If you are adding a new tool to the agent:
-
-1.  Create a new file in `src/mini_opencode/tools/`.
-2.  Use the `@tool` decorator with `parse_docstring=True`.
-3.  Include comprehensive docstrings - these are used by the LLM to understand how to use the tool.
-4.  Register the tool in `src/mini_opencode/agents/coding_agent.py`.
-
-Example:
-```python
-@tool("write", parse_docstring=True)
-def write_tool(runtime: ToolRuntime, path: str, content: str = "") -> str:
-    """
-    Write content to a file.
-
-    Args:
-        path: The absolute path to the file.
-        content: The text to write.
-    """
-    # Implementation...
-```
-
 ## 🤝 Pull Request Process
 
 1.  **Create a Feature Branch**:

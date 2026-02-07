@@ -19,29 +19,12 @@ models:
     # timeout: 60
     # max_retries: 3
 
-
-middlewares:
-  enabled:
-    - summarization
-  configs:
-    summarization:
-      trigger_tokens: 8192
-      keep_messages: 10
-
-
 tools:
   enabled:
-    - edit
-    - read
-    - write
-    - grep
-    - ls
-    - tree
-    - bash
-    - web_crawl
+    - web_fetch
     - web_search
   configs:
-    web_crawl:
+    web_fetch:
       api_key: $FIRECRAWL_API_KEY
     web_search:
       api_key: $TAVILY_API_KEY

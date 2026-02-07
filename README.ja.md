@@ -21,16 +21,22 @@
 
 ## ✨ 特徴
 
-- **🤖 インテリジェント・コーディングエージェント**: LangGraph を活用し、状態を持つ多段階の推論と実行を実現。
-- **📝 コンテキストを考慮したタスク管理**: 複雑な多段階タスクの進捗を追跡するための TODO システムを内蔵。
-- **🛠️ 包括的なツールセット**: ファイル操作（`read`, `write`, `edit`）、ファイルシステムナビゲーション（`ls`, `tree`, `grep`）、ターミナルコマンド（`bash`）、ウェブ検索（`tavily`）、およびウェブクローリング（`firecrawl`）ツールを搭載。
-- **🔌 拡張可能なアーキテクチャ**: [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) をサポートし、外部ツールやサーバーとの統合が可能。
-- **🚀 エージェント・スキルシステム**: 特定のタスク（例：フロントエンドデザイン）のパフォーマンスを向上させるため、専門的な指示、スクリプト、およびリソース（スキル）を動的にロード。
-- **🧠 インテリジェントなコンテキスト管理**: 会話履歴が長くなった場合にコンテキストを自動的に圧縮する要約（Summarization）ミドルウェアを内蔵し、長時間のセッションでもモデルのパフォーマンスを維持。
-- **🎨 インタラクティブな UI**: [Textual](https://github.com/Textualize/textual) を使用したクリーンなターミナルベースのインターフェース。ダーク/ライトモードの自動切り替えやモデル応答のストリーミング表示に対応。
-- **⚡️ スラッシュコマンド**: `/clear`（チャットのリセット）、`/resume`（セッションの復元）、`/exit`（終了）などのコマンドにより機能へ素早くアクセス。自動補完機能付き。
-- **⚙️ 高度なカスタマイズ性**: モデル、ツール、API キーを柔軟に設定できる YAML ベースの構成。
-- **🔒 型の安全性**: 完全に型定義されたコードベース（Python 3.12+）により、信頼性と開発体験を向上。
+- **🤖 DeepAgents 駆動**: LangChain エコシステムの `create_deep_agent` をベースに構築され、エージェント型コーディングの強固な基盤を提供。
+- **📝 統合タスク管理**: 複雑な多段階タスクを効率的に管理・追跡する `write_todos` ツールを内蔵。
+- **🛠️ 必須ツールセット**:
+    - **ファイル操作**: `ls`、`read_file`、`write_file`、`edit_file`、`glob`、`grep` ツールを内蔵。
+    - **シェル実行**: シェルコマンドを安全に実行する `execute` ツールを内蔵。
+    - **ウェブ機能**: **MCP (Model Context Protocol)** 拡張をサポートする、設定可能なウェブ検索およびクローリングツール。
+- **🧩 サブエージェントメカニズム**: 補助的なタスクを処理するデフォルトの `general-purpose` サブエージェントを搭載。
+- **🚀 スキルシステム**: ユーザー定義のスキルを自動的に認識して利用し、エージェントの機能を拡張。
+- **🧠 インテリジェントなコンテキスト管理**:
+    - **AGENTS.md インジェクション**: `AGENTS.md` の内容を自動的に検出し、コンテキストに注入。
+    - **SummarizationMiddleware**: コンテキスト制限に達した際に会話履歴を自動的に要約。
+    - **大規模出力の処理**: コンテキストウィンドウの飽和を防ぐため、大規模なツール出力を自動的にファイルシステムに退避。
+    - **堅牢性**: 宙に浮いたツール呼び出しを適切に処理する `PatchToolCallsMiddleware` を搭載。
+- **🎨 美しい TUI**: Textual ベースの洗練されたターミナルユーザーインターフェース。ダーク/ライトモードの切り替えやストリーミング出力に対応。
+- **⚡️ スラッシュコマンド**: `/clear` や `/exit` などのスラッシュコマンドをサポートし、素早い操作が可能。
+- **⚙️ 高度なカスタマイズ性**: YAML 設定により、モデル、ツール、動作を完全にカスタマイズ可能。
 
 ## 📖 目次
 
@@ -40,7 +46,6 @@
 - [設定](#-設定)
 - [使い方](#-使い方)
 - [プロジェクト構造](#-プロジェクト構造)
-- [開発](#-開発)
 - [貢献](#-貢献)
 - [謝辞](#-謝辞)
 - [スター履歴](#-star-history)
@@ -78,7 +83,6 @@
     ```ini
     DEEPSEEK_API_KEY=your_key_here
     # オプション:
-    ARK_API_KEY=your_doubao_key
     KIMI_API_KEY=your_kimi_key
     TAVILY_API_KEY=your_tavily_key
     FIRECRAWL_API_KEY=your_firecrawl_key
@@ -119,44 +123,23 @@ make dev
 ```text
 mini-opencode/
 ├── src/mini_opencode/
-│   ├── agents/           # コアエージェントロジックと状態定義
+│   ├── agents/           # エージェント作成ロジック (deepagents ベース)
 │   ├── cli/              # ターミナル UI (Textual) コンポーネント
 │   ├── config/           # 設定のロードとバリデーション
-│   ├── middlewares/      # エージェントミドルウェア（例：要約）
 │   ├── models/           # LLM モデルファクトリとセットアップ
 │   ├── prompts/          # プロンプトテンプレート (Jinja2)
-│   ├── skills/           # スキルシステムの実装（ローダー、パーサー、型）
-│   ├── tools/            # ツールの実装
-│   │   ├── file/         # ファイル I/O (read, write, edit)
-│   │   ├── fs/           # ファイルシステム (ls, tree, grep)
-│   │   ├── terminal/     # Bash 実行
-│   │   ├── web/          # 検索とクローリング
+│   ├── tools/            # 追加ツールの実装
+│   │   ├── date/         # 日付ツール
 │   │   ├── mcp/          # MCP ツールの統合
-│   │   └── todo/         # タスク管理
+│   │   └── web/          # ウェブ検索とクローリング
 │   ├── main.py           # CLI エントリポイント
 │   └── project.py        # プロジェクトコンテキストマネージャー
 ├── skills/               # エージェントスキル（指示、スクリプト、リファレンス）
-├── AGENTS.md             # エージェント向け開発ガイド
-├── Makefile              # ビルドと実行コマンド
 ├── config.example.yaml   # 設定テンプレート
 ├── langgraph.example.json# LangGraph 設定テンプレート
+├── Makefile              # ビルドと実行コマンド
 └── pyproject.toml        # プロジェクトの依存関係とメタデータ
 ```
-
-## 🔧 開発
-
-### 新しいツールの追加
-1.  `src/mini_opencode/tools/` に新しいファイルを作成します。
-2.  `@tool` デコレータを使用し、`parse_docstring=True` を設定します。
-3.  引数解析のために Google スタイルの docstring を追加します。
-4.  `src/mini_opencode/agents/coding_agent.py` でツールを登録します。
-
-### コードスタイル
-- **型ヒント**: すべての関数で必須。
-- **Docstrings**: Google スタイルが必須。
-- **命名規則**: 関数/変数は `snake_case`、クラスは `PascalCase`。
-
-詳細は [AGENTS.md](AGENTS.md) の開発ガイドラインを参照してください。
 
 ## 🤝 貢献
 
@@ -167,6 +150,8 @@ mini-opencode/
 3.  変更をコミットする ([Semantic Commits](https://www.conventionalcommits.org/) に従ってください。例: `git commit -m 'feat: Add some AmazingFeature'`)
 4.  ブランチをプッシュする (`git push origin feature/AmazingFeature`)
 5.  プルリクエストを作成する
+
+詳細は [CONTRIBUTING.md](CONTRIBUTING.md) の開発ガイドラインを参照してください。
 
 ## 🙏 謝辞
 

@@ -10,7 +10,7 @@ def init_chat_model() -> BaseChatModel:
     Initialize the chat model client based on the configuration.
 
     The configuration is read from the `models/chat_model` section in `config.yaml`.
-    Supports different model types like 'deepseek', 'doubao', and defaults to OpenAI-compatible.
+    Supports different model types like 'deepseek', 'kimi', and defaults to OpenAI-compatible.
 
     Returns:
         BaseChatModel: An instance of a LangChain chat model.

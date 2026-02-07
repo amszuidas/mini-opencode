@@ -1,3 +1,3 @@
-from .get_today_date import get_today_date_tool
+from .get_current_date import get_current_date_tool
 
-__all__ = ["get_today_date_tool"]
+__all__ = ["get_current_date_tool"]

@@ -61,7 +61,7 @@ class MessageItemView(Static):
             if isinstance(self.message, HumanMessage):
                 header = "[bold cyan]👤 You[/bold cyan]"
             elif isinstance(self.message, AIMessage):
-                header = "[bold green]⌨️ mini-OpenCode[/bold green]"
+                header = "[bold green]🤖 mini-OpenCode[/bold green]"
             if header:
                 yield Static(header, classes="message-header")
 
@@ -145,31 +145,39 @@ class MessageItemView(Static):
         name = tool_call["name"]
         args = tool_call["args"]
         match name:
-            case "bash":
-                return f"💻 Execute command: {args['command']}"
-            case "todo_write":
+            case "write_todos":
                 return "📌 Update to-do list"
-            case "read":
-                return f"👁️  Read file: {args['path']}"
-            case "write":
-                return f"✏️  Write file: {args['path']}"
-            case "edit":
-                return f"✏️  Edit file: {args['path']}"
-            case "grep":
-                path = args.get("path") or "."
-                return f"🔍 Search files: {args['pattern']} in {path}"
+            case "execute":
+                command = args.get("command") or "unknown"
+                return f"💻 Execute command: {command}"
+            case "read_file":
+                file_path = args.get("file_path") or "unknown"
+                return f"👁️  Read file: {file_path}"
+            case "write_file":
+                file_path = args.get("file_path") or "unknown"
+                return f"✏️  Write file: {file_path}"
+            case "edit_file":
+                file_path = args.get("file_path") or "unknown"
+                return f"✏️  Edit file: {file_path}"
             case "ls":
-                match_str = f" with {args['match']}" if args.get("match") else ""
-                return f"🗂️ List files: {args['path']}{match_str}"
-            case "tree":
                 path = args.get("path") or "."
-                depth = (
-                    f" --max-depth={args['max_depth']}" if args.get("max_depth") else ""
-                )
-                return f"🔍 Explore project structure: {path}{depth}"
+                return f"🗂️ List files: {path}"
+            case "glob":
+                pattern = args.get("pattern") or "*"
+                path = args.get("path") or "/"
+                return f"🔍 Glob files: {pattern} in {path}"
+            case "grep":
+                pattern = args.get("pattern") or "*"
+                path = args.get("path") or "."
+                return f"🔍 Grep files: {pattern} in {path}"
             case "web_search":
-                return f"🔍 Web search: {args['query']}"
-            case "web_crawl":
-                return f"🔍 Web crawl: {args['url']}"
+                query = args.get("query") or "unknown"
+                return f"🔍 Web search: {query}"
+            case "web_fetch":
+                url = args.get("url") or "unknown"
+                return f"🔍 Web fetch: {url}"
+            case "task":
+                subagent_type = args.get("subagent_type") or "unknown"
+                return f"🤖 Call subagent: {subagent_type}"
             case _:
                 return f"🛠️ Use MCP tool: {name}({json.dumps(args)})"

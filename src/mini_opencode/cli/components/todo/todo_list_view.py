@@ -19,7 +19,7 @@ class TodoListView(Static):
             self.update("(No TODO found)")
             return
 
-        content = ""
+        display = ""
         for item in items:
             if item["status"] == "in_progress":
                 status = "\\[•]"
@@ -27,6 +27,6 @@ class TodoListView(Static):
                 status = "\\[x]"
             else:
                 status = "\\[ ]"
-            title = item.get("title") or ""
-            content += f"{status} {title}\n"
-        self.update(content)
+            content = item.get("content") or ""
+            display += f"{status} {content}\n"
+        self.update(display)
