@@ -15,12 +15,14 @@ from mini_opencode.tools import (
     get_current_date_tool,
     web_fetch_tool,
     web_search_tool,
+    bocha_websearch_tool,
 )
 
 TOOL_MAP = {
     "get_current_date": get_current_date_tool,
     "web_fetch": web_fetch_tool,
     "web_search": web_search_tool,
+    "bocha_web_search": bocha_websearch_tool,
 }
 
 
@@ -58,6 +60,7 @@ def create_coding_agent(
             get_current_date_tool,
             web_fetch_tool,
             web_search_tool,
+            bocha_websearch_tool,
         ]
     tools = [*tools, *plugin_tools]
 

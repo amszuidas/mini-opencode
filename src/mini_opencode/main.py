@@ -23,6 +23,8 @@ def main() -> None:
     try:
         project.root_dir = new_root
         print(f"Project root set to: {project.root_dir}")
+        print(f"Project root set to: {project.root_dir}")
+        print(f"Project root set to: {project.root_dir}")
     except (FileNotFoundError, NotADirectoryError) as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
