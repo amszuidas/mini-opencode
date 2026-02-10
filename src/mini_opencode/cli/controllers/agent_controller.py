@@ -75,7 +75,7 @@ class AgentController:
             self._coding_agent = create_coding_agent(
                 plugin_tools=self._mcp_tools, checkpointer=self._checkpointer
             )
-            terminal_view.write("- Agent loaded successfully.\n", True)
+            # terminal_view.write("- Agent loaded successfully.\n", True)
             self.is_generating = False
             if hasattr(self.app, "focus_input"):
                 self.app.focus_input()
